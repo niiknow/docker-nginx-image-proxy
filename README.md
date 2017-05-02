@@ -59,7 +59,7 @@ And if that doesn't work, you can always use your custom nginx config by passing
 # Additional features
 - [x] /healthcheck endpoint
 - [x] 302 redirect to origin server on proxy error
-- [x] empty gif on other errors
+- [x] empty gif on other errors: 403, 404, 500 or when URL is not on your whitelist
 
 # Example 
 
