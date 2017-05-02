@@ -13,12 +13,10 @@ ENV NGINX_URL=http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 RUN \
     apt-get -o Acquire::GzipIndexes=false update \
     && apt-get update && apt-get -y upgrade \
-    && apt-get -y install wget curl unzip nano vim rsync sudo tar git apt-transport-https openssh-client openssh-server \
-       apt-utils software-properties-common build-essential python-dev tcl openssl libpcre3 dnsmasq ca-certificates \
-       libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev procps netcat dpkg-dev mcrypt pwgen g++ cpp \
-       language-pack-en-base libicu-dev libglib2.0-dev incron libpcre3 libpcre3-dev libgd-dev \
+    && apt-get -y install wget curl unzip nano vim rsync tar git apt-transport-https openssh-client openssh-server \
+       apt-utils software-properties-common build-essential tcl openssl dnsmasq ca-certificates libssl-dev \
+       zlib1g-dev dpkg-dev cpp libpcre3 libpcre3-dev libgd-dev \
 
-    && echo 'root' >> /etc/incron.allow \
     && dpkg --configure -a \
 
 # re-enable all default services
@@ -29,7 +27,7 @@ RUN \
 
 RUN \
     cd /tmp \
-    && wget -O - http://nginx.org/keys/nginx_signing.key | sudo apt-key add - \
+    && wget -O - http://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
     && echo "deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
