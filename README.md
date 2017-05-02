@@ -21,7 +21,7 @@ docker build -t nginx-image-proxy .
 # run
 docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
 
-with whitelist hosts:  --env WHITELIST_HOSTS='regex for matching hosts'
+url to new/dynamic server conf (your github raw/a github gist maybe?):  --env SERVER_CONF='https://gist.githubusercontent.com'
 
 # web
 http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
@@ -31,7 +31,7 @@ URL options:
 
 ```yml
 code: name - valid values - default
-  q: quality - 1-100 - 75 
+  q: quality - 1-100 - 95 (default best image just in case it's a jpg that already has been optimized) 
   w: width - uint - null
   h: height - uint - null
   c: crop - null, 1 - null
