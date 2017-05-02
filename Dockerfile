@@ -49,3 +49,15 @@ RUN \
     && cd ${NGINX_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb
 
 ADD files/
+
+# cleanup
+RUN \
+    && rm -rf /tmp/* \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV DEBIAN_FRONTEND=teletype
+
+EXPOSE 80
+
+CMD ["/sbin/my_init"]
