@@ -123,6 +123,7 @@ server {
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
         image_filter               resize  $width $height;
+        expires    -1;
         error_page                 415 = @empty;
     }
  
@@ -136,6 +137,7 @@ server {
         image_filter               rotate  $rotate;
         image_filter_crop_offset   $crop_offx $crop_offy;
         image_filter               crop  $width $height;
+        expires    -1;
         error_page 415 = @empty;
     }
 
