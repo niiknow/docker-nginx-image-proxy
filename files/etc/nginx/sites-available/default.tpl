@@ -20,7 +20,7 @@ server {
     image_filter_interlace      on;
 
     proxy_cache_lock            on;
-    proxy_cache_lock_timeout    120s
+    proxy_cache_lock_timeout    120s;
     proxy_set_header            X-Resl-IP  $remote_addr;
     proxy_set_header            X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_hide_header           X-Cache;
