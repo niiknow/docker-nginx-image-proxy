@@ -1,20 +1,28 @@
 # https://www.scalescale.com/tips/nginx/nginx-proxy-cache-explained-2/
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_diskcached:10m max_size=5g inactive=45m;
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=resizedimages:10m max_size=5g inactive=45m;
 
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
+    set $width -;
+    set $height -;
+    set $rotate 0;
+    set $quality 75;
+    set $sharpen 0;
 
-    server_name _;
+    server_name                  _;
+    root                        /usr/share/nginx/html;
+    index                       index.html index.htm;
 
-    resolver 8.8.8.8;
-
-    image_filter_buffer     20M;
-    image_filter_interlace  on;
+    resolver                    8.8.8.8 8.8.4.4;
+ 
+    image_filter_buffer         20M;
+    image_filter_interlace      on;
 
     proxy_cache_lock            on;
-    proxy_cache_lock_timeout    60s;
-    proxy_set_header            X-Forwarded-For $remote_addr;
+    proxy_cache_lock_timeout    120s
+    proxy_set_header            X-Resl-IP  $remote_addr;
+    proxy_set_header            X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_hide_header           X-Cache;
     proxy_ignore_headers        Vary;
     proxy_ignore_headers        Expires;
@@ -23,30 +31,36 @@ server {
 
     proxy_pass_header           P3P;
     proxy_cache_min_uses        2;
-    proxy_cache                 my_diskcached;
+    proxy_cache                 resizedimages;
     proxy_cache_valid           200 10m;
 
-    location ~ ^/rx/([^\/]+)/(http|https)+([:\/\/])+(.*) {
+    location /healthcheck {
+        return 200 "OK";
+    }
+
+    location ~* ^/rx/([^\/]+)/(http|https)+([:\/\/])+(.*) {
         set $myargs "$1";
-        set $image_uri "$2://$4$5";
-        set $myhost $4;
-        set $width -;
-        set $height -;
-        set $rotate 0;
-        set $quality 90;
-
-        if ($myhost ~ "([^/]+)") {
-            set $myhost $1;
-        }
-
-        if ($myhost !~ "___MY_WHITELIST_HOSTS___") {
-            rewrite ^ /403 last;
-        }
+        set $image_uri "$2://$4";
+        set $cmd "resize";
+        set $myfile "$4";
+        set $myhost "$4";
+        set $image_path "$4";
 
 # image_filter_crop_offset {left,center,right} {top,center,bottom};
         set $crop_offx left;
         set $crop_offy top;
+        
+        if ($myhost !~ "___MY_WHITELIST_HOSTS___") {
+            rewrite ^ /403 last;
+            break;
+        }
 
+        if ($myfile ~ "^([^/]+)/(.*)") {
+            set $myhost $1;
+            set $image_path $2;
+        }
+
+# dimensions
         if ($myargs ~ "^\d+$") {
             set $width $myargs;
         }
@@ -59,15 +73,17 @@ server {
             set $height $1;
         }
 
-        if ($myargs ~ "q_(100|[1-9][0-9]|[1-9])") {
+# quality
+        if ($myargs ~ "q_(100|[0-9]|[1-9])") {
             set $quality $1;
         }
 
-        if ($myargs ~ "rz_\d+") {
+# rotate
+        if ($myargs ~ "rz_(90|180|270)") {
             set $rotate $1;
         }
 
-# set gravity
+# gravity
         if ($myargs ~ "g_Center") {
             set $crop_offx center;
             set $crop_offy center;
@@ -77,41 +93,46 @@ server {
             set $crop_offy bottom;
         }
 
-        if ($myargs ~ "g_(.+)East") {
+        if ($myargs ~ "g_(North|South)East") {
             set $crop_offx right;
         }
 
-        if ($myargs ~ "\d+x\d+") {
-            rewrite ^ /crop last;
-            break;
+# sharpen
+        if ($myargs ~ "e_\d+") {
+            set $sharpen $1;
         }
 
+# crop
         if ($myargs ~ c_1) {
-            rewrite ^ /crop last;
-            break;
+            set $cmd "crop";
         }
 
-
+        rewrite ^ /cmd/$cmd last;
+    }
+    
+    location /cmd/resize {
+        internal;
         proxy_pass                 $image_uri;
+        proxy_connect_timeout      60s;
+      
+        image_filter_sharpen       $sharpen;
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
         image_filter               resize  $width $height;
-
-        # error_page 415 = @empty;
+        error_page                 415 = @empty;
     }
-
-    location /crop {
+ 
+    location /cmd/crop {
         internal;
-
         proxy_pass                 $image_uri;
-
+        proxy_connect_timeout      30s;
+        
+        image_filter_sharpen       $sharpen;
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
         image_filter_crop_offset   $crop_offx $crop_offy;
         image_filter               crop  $width $height;
-
-
-        # error_page 415 = @empty;
+        error_page 415 = @empty;
     }
 
     location /403 {
