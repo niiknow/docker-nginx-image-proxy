@@ -48,10 +48,11 @@ RUN \
     && apt-get remove -y nginx nginx-common nginx-full \
     && cd ${NGINX_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb
 
-ADD files/
+ADD ./files /
 
 # cleanup
 RUN \
+    service nginx stop \
     && rm -rf /tmp/* \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -61,3 +62,4 @@ ENV DEBIAN_FRONTEND=teletype
 EXPOSE 80
 
 CMD ["/sbin/my_init"]
+
