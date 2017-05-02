@@ -19,10 +19,9 @@ This does not have a lot of features.
 docker build -t nginx-image-proxy .
 
 # run
-docker run -d --restart=always -p 80:80 -p 443:443 \
--v /opt/myapp/app:/app -v /opt/myapp/backup:/backup \
---env WHITELIST_HOSTS='regex for matching hosts' \
-niiknow/nginx-image-proxy
+docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
+
+with whitelist hosts:  --env WHITELIST_HOSTS='regex for matching hosts'
 
 # web
 http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
