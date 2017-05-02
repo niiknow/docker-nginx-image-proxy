@@ -48,9 +48,13 @@ Resize:
 -------
 
 Dynamic Height: http://yourdomain.com/rx/100/http://remote-host.com/image-path/image.jpg
+
 Dynamic Width: http://yourdomain.com/rx/x100/http://remote-host.com/image-path/image.jpg
+
 Fix Width and Height: http://yourdomain.com/rx/100x100/http://remote-host.com/image-path/image.jpg
+
 Resize with rotate, sharpen: http://yourdomain.com/rx/100,r_90,e_50/http://remote-host.com/image-path/image.jpg
+
 Crop with gravity: http://yourdomain.com/rx/100x100,c_1,g_Center/http://remote-host.com/image-path/image.jpg
 
 Licence: MIT
