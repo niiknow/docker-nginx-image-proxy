@@ -22,4 +22,4 @@ else
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
-nginx -t && service nginx reload # only runs if nginx -t succeeds
+nginx -t && service nginx reload || exit 0
