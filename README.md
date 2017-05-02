@@ -8,10 +8,10 @@ Crop gravity is very important to us.  We don't get why most image transformer d
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping; which is the most common task of image transform.  You buy your own CDN so Cloudinary can be redundant and expensive.
 
-# What does it not solve?
-This does not have a lot of features.
+# And what it doesn't?
+This does not try to solve everything with image transformation.
 
-1.  For more advance stuff, we recommend just using Cloudinary or similar service.
+1.  For more advanced features such as: animated gif, face detection, auto image optimization, and others; we recommend using Cloudinary or similar service.
 2.  There is no plan for SSL or other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.
 3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Then upload to s3 with the same function.
 
@@ -28,7 +28,7 @@ url to new/dynamic server conf (a github raw or/perhap a github gist?):
 # web
 http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
 
-URL options:
+Option Keys:
 -------------
 
 ```yml
@@ -42,6 +42,17 @@ code: name - valid values - default
   e: sharpen - 1..100 - 95
   r: rotate - 0, 90, 180, 270 - 0
 ```
+
+Options Usages:
+----------------
+
+Though options are mirrored of what you would get with Cloudinary, it also very flexible and customizable.
+
+* Like Cloudinary:  OptionKey_OptionValue - g_Center, w_100, h_100
+* Or: OptionKeyOptionValue - gCenter, w100, h100
+* Or in a QueryString: ?g=Center&w=100&h=100
+
+And if that doesn't work, you can always use your custom nginx config by passing the config url into docker run environment variable: SERVER_CONF
 
 # Example 
 
