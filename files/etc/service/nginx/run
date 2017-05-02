@@ -3,4 +3,5 @@ set -e
 
 mkdir -p /var/run/nginx
 chmod 0755 /var/run/nginx
-nginx
+
+exec nginx -g "daemon off;"

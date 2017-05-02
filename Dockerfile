@@ -53,11 +53,16 @@ ADD ./files /
 # cleanup
 RUN \
     service nginx stop \
+    && mv /etc/nginx/nginx.conf /etc/nginx/nginx.old \
+    && mv /etc/nginx/nginx.new /etc/nginx/nginx.conf \
+    && mkdir -p /etc/nginx/sites-enabled \
     && rm -rf /tmp/* \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV DEBIAN_FRONTEND=teletype
+
+VOLUME ["/etc/nginx/", "/var/log/nginx"]
 
 EXPOSE 80
 
