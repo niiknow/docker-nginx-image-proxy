@@ -75,13 +75,13 @@ server {
         }
 
 # quality
-        if ($myargs ~ "q_(100|[0-9]|[1-9])") {
-            set $quality $1;
+        if ($myargs ~ "q([_]*)(\d+)") {
+            set $quality $2;
         }
 
 # rotate
-        if ($myargs ~ "rz_(90|180|270)") {
-            set $rotate $1;
+        if ($myargs ~ "r([_]*)(\d+)") {
+            set $rotate $2;
         }
 
 # gravity
@@ -99,16 +99,18 @@ server {
         }
 
 # sharpen
-        if ($myargs ~ "e_\d+") {
-            set $sharpen $1;
+        if ($myargs ~ "e([_]*)(\d+)") {
+            set $sharpen $2;
         }
 
 # crop
-        if ($myargs ~ c_1) {
+        if ($myargs ~ c([_]*)1) {
             set $cmd "crop";
         }
         
-        add_header  X-Image-Proxy  "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen";
+        set $mycachekey "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen&cmd=$cmd";
+        
+        add_header  X-Image-Proxy  $mycachekey;
         rewrite ^ /cmd/$cmd last;
     }
     
