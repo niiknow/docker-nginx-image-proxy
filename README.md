@@ -21,7 +21,9 @@ docker build -t nginx-image-proxy .
 # run
 docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
 
-url to new/dynamic server conf (your github raw/a github gist maybe?):  --env SERVER_CONF='https://gist.githubusercontent.com'
+url to new/dynamic server conf (a github raw or/perhap a github gist?):
+
+--env SERVER_CONF='https://gist.githubusercontent.com'
 
 # web
 http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
