@@ -20,6 +20,6 @@ if [ -z "$WHITELIST_HOSTS" ] ; then
 fi
 
 rm -f /etc/nginx/sites-enabled/default.conf
-cp /etc/nginx/sites-enabled/default.tpl /etc/nginx/sites-enabled/default.conf
+cp /etc/nginx/sites-available/default.tpl /etc/nginx/sites-enabled/default.conf
 sed -i "s/___MY_WHITELIST_HOSTS___/\/$WHITELIST_HOSTS\/i/g" /etc/nginx/sites-enabled/default.conf
 nginx -s reload
