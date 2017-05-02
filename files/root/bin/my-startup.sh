@@ -29,4 +29,4 @@ else
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
-safe_reload();
+safe_reload()
