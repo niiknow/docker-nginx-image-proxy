@@ -28,6 +28,8 @@ url to new/dynamic server conf (a github raw or/perhap a github gist?):
 # web
 http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
 
+or no protocol (default http): http://yourdomain.com/rx/url-options/remote-host.com/image-path/image.jpg
+
 Option Keys:
 -------------
 
@@ -53,6 +55,11 @@ Though options are mirrored of what you would get with Cloudinary, it also very 
 * Or in a QueryString: ?g=Center&w=100&h=100
 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker run environment variable: SERVER_CONF
+
+# Additional features
+- [x] /healthcheck endpoint
+- [x] 302 redirect to origin server on proxy error
+- [x] empty gif on other errors
 
 # Example 
 
