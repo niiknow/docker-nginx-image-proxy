@@ -44,7 +44,6 @@ RUN \
     && apt-get remove -y nginx nginx-common nginx-full \
     && cd ${NGINX_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb \
     && service nginx stop \
-    && mkdir -p /etc/nginx/sites-enabled \
     && rm -rf /tmp/* \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

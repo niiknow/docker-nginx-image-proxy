@@ -1,0 +1,14 @@
+proxy_hide_header           "X-Cache";
+proxy_hide_header           "Content-Type";
+proxy_hide_header           "Last-Modified";
+proxy_hide_header           "ETag";
+proxy_hide_header           "Content-Disposition";
+proxy_hide_header           "X-Amz-Id";
+proxy_hide_header           "X-Amz-Id-2";
+proxy_hide_header           "X-Amz-Request-Id";
+proxy_hide_header           "X-Amz-Replication-Status";
+proxy_hide_header           "X-Amz-Expiration";
+proxy_hide_header           "X-Amz-Version-Id";
+proxy_hide_header           "X-Amz-Cf-Id";
+proxy_hide_header           "Via";
+proxy_hide_header           "Access-Control-Allow-Origin";
