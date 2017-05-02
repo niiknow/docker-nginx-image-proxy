@@ -44,9 +44,6 @@ code: name - valid values - default
 
 # Example 
 
-Resize: 
--------
-
 Dynamic Height: http://yourdomain.com/rx/100/http://remote-host.com/image-path/image.jpg
 
 Dynamic Width: http://yourdomain.com/rx/x100/http://remote-host.com/image-path/image.jpg
