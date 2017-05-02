@@ -62,7 +62,7 @@ server {
         }
 
 # dimensions
-        if ($myargs ~ "^\d+$") {
+        if ($myargs ~ "^(\d+)[,]*.*") {
             set $width $myargs;
         }
 
@@ -109,8 +109,6 @@ server {
         }
         
         set $mycachekey "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen&cmd=$cmd";
-        
-        add_header  X-Image-Proxy  $mycachekey;
         rewrite ^ /cmd/$cmd last;
     }
     
@@ -118,26 +116,40 @@ server {
         internal;
         proxy_pass                 $image_uri;
         proxy_connect_timeout      60s;
-
+        
+        proxy_hide_header          ETag;
+        proxy_hide_header          Last-Modified;
+        add_header                 X-Proxy-Cache $upstream_cache_status;
+        add_header                 X-Image-Proxy $mycachekey;
+        add_header                 Cache-Control "public";
+        expires                    12h;
+        
         image_filter_sharpen       $sharpen;
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
         image_filter               resize  $width $height;
-        expires    -1;
+
         error_page                 415 = @empty;
     }
  
     location /cmd/crop {
         internal;
         proxy_pass                 $image_uri;
-        proxy_connect_timeout      30s;
+        proxy_connect_timeout      60s;     
+        
+        proxy_hide_header          ETag;
+        proxy_hide_header          Last-Modified;
+        add_header                 X-Proxy-Cache $upstream_cache_status;
+        add_header                 X-Image-Proxy $mycachekey;
+        add_header                 Cache-Control "public";
+        expires                    12h;
         
         image_filter_sharpen       $sharpen;
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
         image_filter_crop_offset   $crop_offx $crop_offy;
         image_filter               crop  $width $height;
-        expires    -1;
+
         error_page 415 = @empty;
     }
 
