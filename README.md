@@ -15,6 +15,18 @@ This does not have a lot of features.
 2.  There is no plan for SSL or other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.
 3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Then upload to s3 with the same function.
 
+# build
+docker build -t nginx-image-proxy .
+
+# run
+docker run -d --restart=always -p 80:80 -p 443:443 \
+-v /opt/myapp/app:/app -v /opt/myapp/backup:/backup \
+--env WHITELIST_HOSTS='regex for matching hosts' \
+niiknow/nginx-image-proxy
+
+# web
+http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
+
 URL options:
 -------------
 
@@ -25,9 +37,20 @@ code: name - valid values - default
   h: height - uint - null
   c: crop - null, 1 - null
   rz: resize - null, 1 - 1
-  g: gravity - NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast - NorthWest
+  g: gravity - NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast *case-sensitive* - NorthWest
   e: sharpen - 1..100 - 95
   r: rotate - 0, 90, 180, 270 - 0
 ```
+
+# Example 
+
+Resize: 
+-------
+
+Dynamic Height: http://yourdomain.com/rx/100/http://remote-host.com/image-path/image.jpg
+Dynamic Width: http://yourdomain.com/rx/x100/http://remote-host.com/image-path/image.jpg
+Fix Width and Height: http://yourdomain.com/rx/100x100/http://remote-host.com/image-path/image.jpg
+Resize with rotate, sharpen: http://yourdomain.com/rx/100,r_90,e_50/http://remote-host.com/image-path/image.jpg
+Crop with gravity: http://yourdomain.com/rx/100x100,c_1,g_Center/http://remote-host.com/image-path/image.jpg
 
 Licence: MIT
