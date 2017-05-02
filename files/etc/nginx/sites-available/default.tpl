@@ -107,7 +107,8 @@ server {
         if ($myargs ~ c_1) {
             set $cmd "crop";
         }
-
+        
+        add_header  X-Image-Proxy  "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen";
         rewrite ^ /cmd/$cmd last;
     }
     
@@ -115,7 +116,7 @@ server {
         internal;
         proxy_pass                 $image_uri;
         proxy_connect_timeout      60s;
-      
+
         image_filter_sharpen       $sharpen;
         image_filter_jpeg_quality  $quality;
         image_filter               rotate  $rotate;
