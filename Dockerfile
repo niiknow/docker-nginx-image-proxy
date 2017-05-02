@@ -5,8 +5,7 @@ MAINTAINER friends@niiknow.org
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 TERM=xterm container=docker
 ENV IMAGE_FILTER_URL=https://gist.githubusercontent.com/noogen/4a662ade2d9570f8996f3af9869c5216/raw/11077edb7fe189b918e3f2abb41d2e352cb7d936/ngx_http_image_filter_module.c
-ENV NGINX_VERSION=1.13.0
-ENV NGINX_DIR=/tmp/nginx
+ENV NGINX_VERSION=1.13.0 NGINX_DIR=/tmp/nginx
 ENV NGINX_URL=http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 
 # start
@@ -51,10 +50,6 @@ RUN \
     && rm -rf /var/lib/apt/lists/*
 
 ADD ./files /
-
-ENV DEBIAN_FRONTEND=teletype
-
-VOLUME ["/etc/nginx/", "/var/log/nginx"]
 
 EXPOSE 80
 
