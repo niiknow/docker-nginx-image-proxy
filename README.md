@@ -48,8 +48,8 @@ Options Usages:
 
 Though options are mirrored of what you would get with Cloudinary, it also very flexible and customizable.
 
-* Like Cloudinary:  OptionKey_OptionValue - g_Center, w_100, h_100
-* Or: OptionKeyOptionValue - gCenter, w100, h100
+* Like Cloudinary with underscore (_) as separator:  OptionKey_OptionValue - g_Center, w_100, h_100
+* Or without any separator: OptionKeyOptionValue - gCenter, w100, h100
 * Or in a QueryString: ?g=Center&w=100&h=100
 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker run environment variable: SERVER_CONF
