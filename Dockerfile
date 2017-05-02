@@ -32,11 +32,9 @@ RUN \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
     && echo "deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
-    && apt-get update -y && apt-get install nginx -y
+    && apt-get update -y && apt-get install nginx -y \
 
-# prepare for installation
-RUN \
-    apt-get update -y \
+# recomple nginx
     && mkdir -p ${NGINX_DIR} \
     && cd ${NGINX_DIR}; apt-get source nginx -y \
     && mv ${NGINX_DIR}/nginx-${NGINX_VERSION}/src/http/modules/ngx_http_image_filter_module.c ${NGINX_DIR}/nginx-${NGINX_VERSION}/src/http/modules/ngx_http_image_filter_module.bak \
@@ -45,19 +43,14 @@ RUN \
     && cd ${NGINX_DIR}; apt-get build-dep nginx -y \
     && cd ${NGINX_DIR}/nginx-${NGINX_VERSION}; dpkg-buildpackage -b \
     && apt-get remove -y nginx nginx-common nginx-full \
-    && cd ${NGINX_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb
-
-ADD ./files /
-
-# cleanup
-RUN \
-    service nginx stop \
-    && mv /etc/nginx/nginx.conf /etc/nginx/nginx.old \
-    && mv /etc/nginx/nginx.new /etc/nginx/nginx.conf \
+    && cd ${NGINX_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb \
+    && service nginx stop \
     && mkdir -p /etc/nginx/sites-enabled \
     && rm -rf /tmp/* \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+ADD ./files /
 
 ENV DEBIAN_FRONTEND=teletype
 
