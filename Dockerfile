@@ -13,13 +13,14 @@ ENV NGINX_URL=http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 RUN \
     apt-get -o Acquire::GzipIndexes=false update \
     && apt-get update && apt-get -y upgrade \
-    && apt-get -y install wget curl unzip nano vim rsync tar git apt-transport-https openssh-client openssh-server \
-       apt-utils software-properties-common build-essential tcl openssl dnsmasq ca-certificates libssl-dev \
-       zlib1g-dev dpkg-dev cpp libpcre3 libpcre3-dev libgd-dev \
+    && apt-get -y install wget curl unzip nano vim rsync git apt-transport-https openssh-client openssh-server \
+       apt-utils software-properties-common build-essential openssl dnsmasq ca-certificates libssl-dev \
+       zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev \
 
     && dpkg --configure -a \
 
 # re-enable all default services
+    && apt-get clean \
     && rm -f /etc/service/syslog-forwarder/down \
     && rm -f /etc/service/cron/down \
     && rm -f /etc/service/syslog-ng/down \

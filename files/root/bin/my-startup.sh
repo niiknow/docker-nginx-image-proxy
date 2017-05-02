@@ -15,7 +15,7 @@ log() {
 }
 
 safe_reload() {
-  echo "[`date +'%Y-%m-%d %T'`] nginx safe reload";
+  echo "[`date +'%Y-%m-%d %T'`] nginx safe reload"
 
   nginx -t &&
     service nginx reload # only runs if nginx -t succeeds
