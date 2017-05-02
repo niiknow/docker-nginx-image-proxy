@@ -2,6 +2,7 @@
 Image cropping with gravity, resizing and compressing on the fly with nginx image_filter module.  Docker container to build your own Cloudinary-like service.
 
 For image crop offset, credit to: https://github.com/bobrik/nginx_image_filter
+
 Crop gravity is very important to us.  We don't get why most image transformer default is set to Center.  Often, we find ourself using crop gravity NorthWest for large image teaser, especially in email.  This is why we have our default to NorthWest.  
 
 # What does this solve?
