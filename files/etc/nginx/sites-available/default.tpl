@@ -35,6 +35,7 @@ server {
     proxy_cache_valid           200 10m;
 
     location /healthcheck {
+        default_type text/plain;
         return 200 "OK";
     }
 
