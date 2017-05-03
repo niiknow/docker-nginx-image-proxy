@@ -9,7 +9,7 @@ ENV IMAGE_FILTER_URL=https://raw.githubusercontent.com/niiknow/docker-nginx-imag
 RUN \
     apt-get update && apt-get upgrade -y --force-yes --no-install-recommends \
     && apt-get install -y --force-yes --no-install-recommends wget curl unzip nano vim git apt-transport-https \
-       apt-utils software-properties-common build-essential openssl dnsmasq ca-certificates libssl-dev \
+       apt-utils software-properties-common build-essential dnsmasq ca-certificates libssl-dev \
        zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev \
 
     && dpkg --configure -a \
