@@ -1,41 +1,43 @@
 # docker-nginx-image-proxy
-Image cropping with gravity, resizing and compressing on the fly with nginx image_filter module.  Docker container to build your own Cloudinary-like service.
+Image cropping with gravity, resize and compress on the fly with nginx image_filter module.  Docker container to build your own Cloudinary-like service.
 
-For image crop offset, credit to: https://github.com/bobrik/nginx_image_filter
+Nginx module - https://gist.github.com/noogen/4a662ade2d9570f8996f3af9869c5216
 
-Crop gravity is very important to us.  We don't get why most image transformer default is set to Center.  Often, we find ourself using crop gravity NorthWest for large image teaser, especially in email.  This is why we have our default to NorthWest.  
+Features:
+- [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
+- [x] png automatically convert to jpeg if quality < 96, credit: https://github.com/JamesJJ/ngx_http_image_filter_module
+- [x] /healthcheck endpoint
+- [x] 302 redirect to origin server on proxy error
+- [x] empty gif on other errors: 403, 404, 415, 500 or when URL is not on your whitelist 
 
 # What does this solve?
-You have a huge repository of images that need dynamic resize and cropping; which is the most common task of image transform.  You buy your own CDN so Cloudinary can be redundant and expensive.
+You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
 
 # And what it doesn't?
-This does not try to solve everything with image transformation.
+Unlike other libraries, this does not try to do every image transformation and/or caching.
 
 1.  For more advanced features such as: animated gif, face detection, auto image optimization, and others; we recommend using Cloudinary or similar service.
-2.  There is no plan for SSL or other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.
-3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Then upload to s3 with the same function.
+2.  There is no plan for SSL or other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.  We love StackPath/MaxCDN EdgeRules™.
+3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Upload the result to s3 with the same function.
 
 # build
 docker build -t nginx-image-proxy .
 
 # run
 docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
-
-url to new/dynamic server conf (a github raw or/perhap a github gist?):
-
 --env SERVER_CONF='https://gist.githubusercontent.com/...'
 
 # web
-http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
+Example: http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
 
-or no protocol (default http): http://yourdomain.com/rx/url-options/remote-host.com/image-path/image.jpg
+or http as protocol default: http://yourdomain.com/rx/url-options/remote-host.com/image-path/image.jpg
 
 Option Keys:
 -------------
 
 ```yml
 code: name - valid values - default
-  q: quality - 1-100 - 96 (default best image just in case it's a jpg that already has been optimized) 
+  q: quality - 1-100 - 96 (default to best in case it's a jpg that already has been optimized) 
   w: width - uint - null
   h: height - uint - null
   c: crop - null, 1 - null
@@ -54,12 +56,7 @@ Though options are mirrored of what you would get with Cloudinary, it also very 
 * Or without any separator: OptionKeyOptionValue - gCenter, w100, h100
 * Or in a QueryString: ?g=Center&w=100&h=100
 
-And if that doesn't work, you can always use your custom nginx config by passing the config url into docker run environment variable: SERVER_CONF
-
-# Additional features
-- [x] /healthcheck endpoint
-- [x] 302 redirect to origin server on proxy error
-- [x] empty gif on other errors: 403, 404, 500 or when URL is not on your whitelist
+And if that doesn't work, you can always use your custom nginx config by passing the config url into docker environment variable: SERVER_CONF
 
 # Example 
 
@@ -73,4 +70,4 @@ Resize with rotate, sharpen: http://yourdomain.com/rx/100,r_90,e_50/http://remot
 
 Crop with gravity: http://yourdomain.com/rx/100x100,c_1,g_Center/http://remote-host.com/image-path/image.jpg
 
-Licence: MIT
+# Licence: MIT

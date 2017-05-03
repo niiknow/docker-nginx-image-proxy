@@ -8,7 +8,7 @@ ENV IMAGE_FILTER_URL=https://gist.githubusercontent.com/noogen/4a662ade2d9570f89
 # start
 RUN \
     apt-get update && apt-get upgrade -y --force-yes --no-install-recommends \
-    && apt-get install -y --force-yes --no-install-recommends wget curl unzip nano vim rsync git apt-transport-https openssh-client openssh-server \
+    && apt-get install -y --force-yes --no-install-recommends wget curl unzip nano vim git apt-transport-https \
        apt-utils software-properties-common build-essential openssl dnsmasq ca-certificates libssl-dev \
        zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev \
 
@@ -40,8 +40,7 @@ RUN \
     && cd ${NGINX_BUILD_DIR}; apt-get build-dep nginx -y \
     && cd ${NGINX_BUILD_DIR}/nginx-${NGINX_VERSION}; dpkg-buildpackage -b \
 
-# remove installed version
-    && apt-get remove -y nginx nginx-common nginx-full \
+# install new nginx package
     && cd ${NGINX_BUILD_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb \
     && service nginx stop \
     && apt-get clean \
