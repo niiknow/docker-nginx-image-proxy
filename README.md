@@ -35,7 +35,7 @@ Option Keys:
 
 ```yml
 code: name - valid values - default
-  q: quality - 1-100 - 95 (default best image just in case it's a jpg that already has been optimized) 
+  q: quality - 1-100 - 96 (default best image just in case it's a jpg that already has been optimized) 
   w: width - uint - null
   h: height - uint - null
   c: crop - null, 1 - null
