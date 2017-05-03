@@ -28,9 +28,9 @@ docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
 --env SERVER_CONF='https://gist.githubusercontent.com/...'
 
 # web
-Example: http://yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
+Example: http://imageproxy.yourdomain.com/rx/url-options/http://remote-host.com/image-path/image.jpg
 
-or http as protocol default: http://yourdomain.com/rx/url-options/remote-host.com/image-path/image.jpg
+or http as protocol default: http://imageproxy.yourdomain.com/rx/url-options/remote-host.com/image-path/image.jpg
 
 Option Keys:
 -------------
@@ -59,15 +59,16 @@ Though options are mirrored of what you would get with Cloudinary, it also very 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker environment variable: SERVER_CONF
 
 # Example 
+Original Image: https://octodex.github.com/images/codercat.jpg - 896x896
 
-Dynamic Height: http://yourdomain.com/rx/100/http://remote-host.com/image-path/image.jpg
+Dynamic Height: (http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg)
 
-Dynamic Width: http://yourdomain.com/rx/x100/http://remote-host.com/image-path/image.jpg
+Dynamic Width: (http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg)
 
-Fix Width and Height: http://yourdomain.com/rx/100x100/http://remote-host.com/image-path/image.jpg
+Fix Width and Height - fit (http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-Resize with rotate, sharpen: http://yourdomain.com/rx/100,r_90,e_50/http://remote-host.com/image-path/image.jpg
+Resize with rotate, sharpen: (http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-Crop with gravity: http://yourdomain.com/rx/100x100,c_1,g_Center/http://remote-host.com/image-path/image.jpg
+Crop with gravity: (http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-# Licence: MIT
+# MIT
