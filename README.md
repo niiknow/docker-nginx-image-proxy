@@ -1,7 +1,7 @@
 # docker-nginx-image-proxy
 Image cropping with gravity, resize and compress on the fly with nginx image_filter module.  Docker container to build your own Cloudinary-like service.
 
-Nginx module - https://gist.github.com/noogen/4a662ade2d9570f8996f3af9869c5216
+Nginx module - https://github.com/niiknow/docker-nginx-image-proxy/blob/master/files/root/ngx_http_image_filter_module.c
 
 Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
