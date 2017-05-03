@@ -5,5 +5,5 @@
 service nginx reload
 
 # delete anything older than 2 days
-find /tmp/nginx/* -type f -mtime +2 -exec rm -f {} \;
-find /var/cache/nginx/* -type f -mtime +2 -exec rm -f {} \;
+find /tmp/nginx/* -type f -mtime +1 -exec rm -f {} \;
+find /var/cache/nginx/* -type f -mtime +1 -exec rm -f {} \;
