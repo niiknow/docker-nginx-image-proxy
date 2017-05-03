@@ -12,3 +12,4 @@ proxy_hide_header           "X-Amz-Version-Id";
 proxy_hide_header           "X-Amz-Cf-Id";
 proxy_hide_header           "Via";
 proxy_hide_header           "Access-Control-Allow-Origin";
+proxy_hide_header           "x-amz-meta-s3b-last-modified";
