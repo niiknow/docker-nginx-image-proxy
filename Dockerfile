@@ -3,7 +3,7 @@ FROM hyperknot/baseimage16:1.0.1
 MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive NGINX_VERSION=1.13.0 NGINX_BUILD_DIR=/tmp/nginx 
-ENV IMAGE_FILTER_URL=https://gist.githubusercontent.com/noogen/4a662ade2d9570f8996f3af9869c5216/raw/426eb9088b75aeea802f09ab4768a0407ec0f143/ngx_http_image_filter_module.c
+ENV IMAGE_FILTER_URL=https://gist.githubusercontent.com/noogen/4a662ade2d9570f8996f3af9869c5216/raw/a03245405437cdc46940b95788c784ea803836fb/ngx_http_image_filter_module.c
 
 # start
 RUN \
