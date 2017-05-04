@@ -59,19 +59,19 @@ Though options are mirrored of what you would get with Cloudinary, it also very 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker environment variable: SERVER_CONF
 
 # Example 
-* Original Image
+* Original Image - https://octodex.github.com/images/codercat.jpg
 ![Original Image](https://octodex.github.com/images/codercat.jpg) - 896x896
 
-* Dynamic Height
+* Dynamic Height - http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg
 ![Dynamic Height](http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg)
 
-* Dynamic Width
+* Dynamic Width - http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg
 ![Dynamic Width](http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg)
 
-* Fix Width and Height - fit 
+* Fix Width and Height, fit - http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
 ![Fix Width and Height - fit](http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-* Resize with rotate, sharpen
+* Resize with rotate, sharpen - http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
 ![Resize with rotate, sharpen](http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
 * Crop with gravity 
