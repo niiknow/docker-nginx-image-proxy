@@ -3,13 +3,13 @@ FROM hyperknot/baseimage16:1.0.1
 MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive NGINX_VERSION=1.13.0 NGINX_BUILD_DIR=/tmp/nginx 
-ENV IMAGE_FILTER_URL=https://raw.githubusercontent.com/niiknow/docker-nginx-image-proxy/master/files/root/ngx_http_image_filter_module.c
+ENV IMAGE_FILTER_URL=https://raw.githubusercontent.com/niiknow/docker-nginx-image-proxy/master/files/root/src/ngx_http_image_filter_module.c
 
 # start
 RUN \
     apt-get update && apt-get upgrade -y --force-yes --no-install-recommends \
-    && apt-get install -y --force-yes --no-install-recommends wget curl unzip nano vim git apt-transport-https \
-       apt-utils software-properties-common build-essential dnsmasq ca-certificates libssl-dev \
+    && apt-get install -y --force-yes --no-install-recommends wget curl unzip nano vim apt-transport-https \
+       apt-utils software-properties-common build-essential ca-certificates libssl-dev \
        zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev \
 
     && dpkg --configure -a \
@@ -43,6 +43,8 @@ RUN \
 # install new nginx package
     && cd ${NGINX_BUILD_DIR}; dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb \
     && service nginx stop \
+    && apt-get remove --purge -y build-essential wget \
+    && apt-get autoremove --purge -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
