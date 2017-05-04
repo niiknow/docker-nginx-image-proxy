@@ -14,11 +14,10 @@ log() {
   else echo; fi
 }
 
-rm -f /etc/nginx/sites-enabled/server.conf
-
 if [ -z "$SERVER_CONF" ] ; then
-   cp /root/server.conf /etc/nginx/sites-enabled/server.conf
+   # do nothing
 else
+   mv /etc/nginx/sites-enabled/server.conf /etc/nginx/sites-enabled/server.bak
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 

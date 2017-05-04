@@ -13,7 +13,7 @@ RUN \
     && echo "deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
 
-# update repo
+# update repo, install nginx and module to get dependencies
     && apt-get update -y && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --no-install-suggests \
        nano nginx nginx-module-image-filter \
