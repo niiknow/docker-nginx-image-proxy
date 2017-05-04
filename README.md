@@ -59,9 +59,7 @@ Though options are mirrored of what you would get with Cloudinary, it also very 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker environment variable: SERVER_CONF
 
 # Example 
-* Original Image - https://octodex.github.com/images/codercat.jpg
-![Original Image](https://octodex.github.com/images/codercat.jpg) - 896x896
-
+* Original Image - https://octodex.github.com/images/codercat.jpg - 896x896
 * Dynamic Height - http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg
 ![Dynamic Height](http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg)
 
