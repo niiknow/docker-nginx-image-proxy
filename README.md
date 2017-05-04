@@ -72,7 +72,7 @@ And if that doesn't work, you can always use your custom nginx config by passing
 * Resize with rotate, sharpen - http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
 ![Resize with rotate, sharpen](http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-* Crop with gravity 
+* Crop with gravity - http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
 ![Crop with gravity](http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
 # MIT
