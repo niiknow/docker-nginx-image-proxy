@@ -13,3 +13,6 @@ proxy_hide_header           "X-Amz-Cf-Id";
 proxy_hide_header           "Via";
 proxy_hide_header           "Access-Control-Allow-Origin";
 proxy_hide_header           "x-amz-meta-s3b-last-modified";
+proxy_hide_header           "Set-Cookie";
+proxy_hide_header           "CF-Cache-Status";
+proxy_hide_header           "cf-ray";
