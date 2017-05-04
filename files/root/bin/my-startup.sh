@@ -14,9 +14,7 @@ log() {
   else echo; fi
 }
 
-if [ -z "$SERVER_CONF" ] ; then
-   # do nothing
-else
+if [ -n "$SERVER_CONF" ] ; then
    mv /etc/nginx/sites-enabled/server.conf /etc/nginx/sites-enabled/server.bak
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
