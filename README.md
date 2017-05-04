@@ -50,7 +50,7 @@ code: name - valid values - default
 Options Usages:
 ----------------
 
-Though options are mirrored of what you would get with Cloudinary, it also very flexible and customizable.
+Options are a subset of Cloudinary. It's also very flexible and customizable.
 
 * Like Cloudinary with underscore (_) as separator:  OptionKey_OptionValue - g_Center, w_100, h_100
 * Or without any separator: OptionKeyOptionValue - gCenter, w100, h100
