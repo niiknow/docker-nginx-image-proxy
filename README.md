@@ -43,7 +43,7 @@ code: name - valid values - default
   c: crop - null, 1 - null
   rz: resize - null, 1 - 1
   g: gravity - NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast *case-sensitive* - NorthWest
-  e: sharpen - 1..100 - 95
+  e: sharpen - 1..100 - 0
   r: rotate - 0, 90, 180, 270 - 0
 ```
 
