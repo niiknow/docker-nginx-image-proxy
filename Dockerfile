@@ -16,7 +16,17 @@ RUN \
 # update repo, install nginx and module to get dependencies
     && apt-get update -y && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --no-install-suggests \
-       nano nginx nginx-module-image-filter \
+       nano nginx \
+       nginx-module-xslt \
+       nginx-module-geoip \
+       nginx-module-image-filter \
+       nginx-module-perl \
+       nginx-module-njs \
+       gettext-base \
+       geoip-bin \
+       geoip-database \
+       geoip-database-extra \
+       libgeoip-dev \
     && dpkg --configure -a \
 
 # re-enable all default services
