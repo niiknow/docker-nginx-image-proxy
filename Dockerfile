@@ -17,16 +17,9 @@ RUN \
     && apt-get update -y && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --no-install-suggests \
        nano nginx \
-       nginx-module-xslt \
        nginx-module-geoip \
        nginx-module-image-filter \
-       nginx-module-perl \
-       nginx-module-njs \
        gettext-base \
-       geoip-bin \
-       geoip-database \
-       geoip-database-extra \
-       libgeoip-dev \
     && dpkg --configure -a \
 
 # re-enable all default services
@@ -34,7 +27,9 @@ RUN \
     && rm -f /etc/service/cron/down \
     && rm -f /etc/service/syslog-ng/down \
     && rm -f /core \
-
+    && cd /tmp \
+    && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | gzip -d - > /etc/nginx/GeoIP.dat \
+    && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | gzip -d - > /etc/nginx/GeoLiteCity.dat \
 # cleanup
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \

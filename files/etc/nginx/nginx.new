@@ -124,6 +124,9 @@ http {
     # Prevent Client headers from going to nginx.
     proxy_pass_request_headers       off;
 
+    # GeoIP stuff
+    geoip_country /etc/nginx/GeoIP.dat;
+    geoip_city /etc/nginx/GeoLiteCity.dat;
 
     # Wildcard include
     include                          /etc/nginx/conf.d/*.conf;
