@@ -125,14 +125,14 @@ http {
     proxy_pass_request_headers       off;
 
     # GeoIP stuff
-    geoip_country /etc/nginx/GeoIP.dat;
-    geoip_city /etc/nginx/GeoLiteCity.dat;
+    geoip_country                    /etc/nginx/GeoIP.dat;
+    geoip_city                       /etc/nginx/GeoLiteCity.dat;
 
     # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
-    limit_req_status 429;
+    limit_req_status                 429;
 
     # throttling by IP address
-    limit_req_zone $binary_remote_addr zone=ip:50m rate=30r/s;
+    limit_req_zone                   $binary_remote_addr zone=ip:50m rate=30r/s;
 
     # Wildcard include
     include                          /etc/nginx/conf.d/*.conf;
