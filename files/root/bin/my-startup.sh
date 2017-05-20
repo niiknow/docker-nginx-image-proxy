@@ -19,4 +19,4 @@ if [ -n "$SERVER_CONF" ] ; then
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
-nginx -t && true
+nginx -t || true
