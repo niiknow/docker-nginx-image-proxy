@@ -135,18 +135,6 @@ http {
     geoip_country                    /etc/nginx/GeoIP.dat;
     geoip_city                       /etc/nginx/GeoLiteCity.dat;
 
-    # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
-    limit_req_status                 429;
-
-    # throttling by IP address
-    limit_req_zone                   $binary_remote_addr zone=ip2:50m rate=2r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip4:50m rate=4r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip8:50m rate=8r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip16:50m rate=16r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip32:50m rate=32r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip64:50m rate=64r/s;
-    limit_req_zone                   $binary_remote_addr zone=ip128:50m rate=128r/s;
-
     # Wildcard include
     include                          /etc/nginx/conf.d/*.conf;
     include                          /etc/nginx/sites-enabled/*.conf;
