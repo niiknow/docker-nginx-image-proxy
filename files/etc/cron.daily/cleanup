@@ -2,7 +2,7 @@
 # daily cleanup script
 
 # reload nginx to prevent file lock and immediately clear cache
-service nginx reload
+sv restart nginx
 
 # delete anything older than 2 days
 find /tmp/nginx/* -type f -mtime +1 -exec rm -f {} \;
