@@ -19,4 +19,4 @@ if [ -n "$SERVER_CONF" ] ; then
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
-nginx -t && service nginx reload || exit 0
+nginx -t && nginx -s reload || exit 0
