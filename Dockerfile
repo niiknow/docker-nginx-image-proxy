@@ -27,9 +27,16 @@ RUN \
     && rm -f /etc/service/cron/down \
     && rm -f /etc/service/syslog-ng/down \
     && rm -f /core \
+
+# geoip stuff
     && cd /tmp \
     && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | gzip -d - > /etc/nginx/GeoIP.dat \
     && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | gzip -d - > /etc/nginx/GeoLiteCity.dat \
+
+# forward request and error logs to docker log collector
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+
 # cleanup
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \
