@@ -13,7 +13,7 @@ log() {
    if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
    else echo; fi
 }
-regex='^(https?|ftp|file):\/\/'
+regex='^(https?):\/\/'
 
 if [[ "$SERVER_CONF" =~ regex ]] ; then
    echo "[`date +'%Y-%m-%d %T'`] Getting new server conf"
