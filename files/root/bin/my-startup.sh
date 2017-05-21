@@ -15,13 +15,16 @@ function log {
 }
 
 if [ -n "$SERVER_CONF" ] ; then
-   log "Getting new server conf"
+   log "Getting new server.conf"
+
    mv /etc/nginx/sites-enabled/server.conf /etc/nginx/sites-enabled/server.bak
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
 if [ -n "$GEODB_URL" ] ; then
-   log "Updating geo db"
+   log "Updating geo DB"
+
+   mv /etc/nginx/GeoLiteCity.dat /etc/nginx/GeoLiteCity.bak
    curl $GEODB_URL | gzip -d - > /etc/nginx/GeoLiteCity.dat
 fi
 
