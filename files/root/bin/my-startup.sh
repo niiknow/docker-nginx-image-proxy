@@ -1,7 +1,7 @@
 #!/bin/bash
 function die {
-    echo >&2 "$@"
-    exit 1
+   echo >&2 "$@"
+   exit 1
 }
 
 #######################################
@@ -10,8 +10,8 @@ function die {
 #   String: value to log
 #######################################
 log() {
-  if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
-  else echo; fi
+   if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
+   else echo; fi
 }
 
 if [ -n "$SERVER_CONF" ] ; then
@@ -20,8 +20,8 @@ if [ -n "$SERVER_CONF" ] ; then
 fi
 
 if [ -n "$GEO_URL"] ; then
-	rm -f /etc/nginx/GeoLiteCity.dat
-	curl $GEO_URL | gzip -d - > /etc/nginx/GeoLiteCity.dat
+   rm -f /etc/nginx/GeoLiteCity.dat
+   curl $GEO_URL | gzip -d - > /etc/nginx/GeoLiteCity.dat
 fi
 
 nginx -t || true

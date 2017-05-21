@@ -5,6 +5,8 @@ proxy_hide_header           "ETag";
 proxy_hide_header           "Content-Disposition";
 proxy_hide_header           "X-Amz-Id";
 proxy_hide_header           "X-Amz-Id-2";
+proxy_hide_header           "x-amz-meta-s3fox-filesize";
+proxy_hide_header           "x-amz-meta-s3fox-modifiedtime";
 proxy_hide_header           "X-Amz-Request-Id";
 proxy_hide_header           "X-Amz-Replication-Status";
 proxy_hide_header           "X-Amz-Expiration";
