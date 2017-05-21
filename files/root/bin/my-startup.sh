@@ -9,7 +9,7 @@ function die {
 # Arguments:
 #   String: value to log
 #######################################
-log() {
+function log {
    if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
    else echo; fi
 }
