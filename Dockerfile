@@ -30,7 +30,6 @@ RUN \
 
 # geoip stuff
     && cd /tmp \
-    && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | gzip -d - > /etc/nginx/GeoIP.dat \
     && curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | gzip -d - > /etc/nginx/GeoLiteCity.dat \
 
 # forward request and error logs to docker log collector

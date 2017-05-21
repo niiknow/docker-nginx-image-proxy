@@ -19,4 +19,9 @@ if [ -n "$SERVER_CONF" ] ; then
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
+if [ -n "$GEO_URL"] ; then
+	rm -f /etc/nginx/GeoLiteCity.dat
+	curl $GEO_URL | gzip -d - > /etc/nginx/GeoLiteCity.dat
+fi
+
 nginx -t || true
