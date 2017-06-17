@@ -2,7 +2,9 @@ FROM hyperknot/baseimage16:1.0.1
 
 MAINTAINER friends@niiknow.org
 
-ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive
+ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
+    TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
+    NGINX_VERSION=1.13.0-1~xenial
 
 # start
 RUN \
@@ -16,9 +18,9 @@ RUN \
 # update repo, install nginx and module to get dependencies
     && apt-get update -y && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --no-install-suggests \
-       nano nginx \
-       nginx-module-geoip \
-       nginx-module-image-filter \
+       nano nginx=1.13.0-1~xenial \
+       nginx-module-geoip=1.13.0-1~xenial \
+       nginx-module-image-filter=1.13.0-1~xenial \
        gettext-base \
     && dpkg --configure -a \
 
