@@ -5,10 +5,9 @@ Nginx module - https://github.com/niiknow/docker-nginx-image-proxy/blob/master/b
 
 Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
-- [x] png automatically convert to jpeg if quality < 96, credit: https://github.com/JamesJJ/ngx_http_image_filter_module
 - [x] /healthcheck endpoint
-- [x] 302 redirect to origin server on proxy error
-- [x] empty gif on other errors: 403, 404, 415, 500 or when URL is not on your whitelist 
+- [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504
+- [x] convert/force output to another format
 
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
@@ -37,7 +36,7 @@ Option Keys:
 
 ```yml
 code: name - valid values - default
-  q: quality - 1-100 - 96 (default to best in case it's a jpg that already has been optimized) 
+  q: quality - 1..100 - 96 (default to best in case it's previously optimized) 
   w: width - uint - null
   h: height - uint - null
   c: crop - null, 1 - null
@@ -45,6 +44,7 @@ code: name - valid values - default
   g: gravity - NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast *case-sensitive* - NorthWest
   e: sharpen - 1..100 - 0
   r: rotate - 0, 90, 180, 270 - 0
+  ofmt: bmp, jpg, jpeg, png, gif, webp - force output format
 ```
 
 Options Usages:

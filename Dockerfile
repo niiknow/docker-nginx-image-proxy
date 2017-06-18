@@ -3,9 +3,12 @@ FROM hyperknot/baseimage16:1.0.1
 MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
-    TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive
+    TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
+    NGINX_VERSION=1.13.1-1~xenial_amd64.deb
 
-ADD ./build/nginx_1.13.1-1~xenial_amd64.deb /tmp
+ADD ./build/nginx_${NGINX_VERSION} /tmp
+
+# ADD ./build/nginx-dbg_${NGINX_VERSION} /tmp
 
 # start
 RUN \
@@ -17,13 +20,19 @@ RUN \
     && echo "deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
 
-# update repo, install nginx and module to get dependencies
+# update repo
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests \
        nano libgd3 gettext-base unzip \
     && dpkg --configure -a \
 
-    && dpkg -i nginx_1.13.1-1~xenial_amd64.deb \
+# install nginx
+    && dpkg -i nginx_${NGINX_VERSION} \
+
+#    && dpkg -i nginx-dbg_${NGINX_VERSION} \
+
+# delete dummy conf
+    && rm -rf /etc/nginx/conf.d/default.conf \
 
 # re-enable all default services
     && rm -f /etc/service/syslog-forwarder/down \
