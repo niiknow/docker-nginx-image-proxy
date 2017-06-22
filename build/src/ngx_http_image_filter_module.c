@@ -330,7 +330,7 @@ ngx_http_image_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
     ngx_chain_t                    out;
     ngx_http_image_filter_ctx_t   *ctx;
     ngx_http_image_filter_conf_t  *conf;
-    ngx_str_t                      ofmt;
+    ngx_str_t                      ofmt = ngx_null_string;
 
     ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "image filter");
 
@@ -371,8 +371,7 @@ ngx_http_image_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
         }
 
         ct = &ngx_http_image_types[ctx->type - 1];
-
-        if (ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
+        if (conf->output != NULL && ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
             if (ngx_strncmp(ofmt.data, "jpg", 3) == 0 || ngx_strncmp(ofmt.data, "jpeg", 4) == 0) {
                 ct = &ngx_http_image_types[NGX_HTTP_IMAGE_JPEG - 1];
 
@@ -594,7 +593,7 @@ ngx_http_image_process(ngx_http_request_t *r)
     ngx_int_t                      rc;
     ngx_http_image_filter_ctx_t   *ctx;
     ngx_http_image_filter_conf_t  *conf;
-    ngx_str_t                      ofmt;
+    ngx_str_t                      ofmt = ngx_null_string;
 
     r->connection->buffered &= ~NGX_HTTP_IMAGE_BUFFERED;
 
@@ -605,11 +604,12 @@ ngx_http_image_process(ngx_http_request_t *r)
     conf = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
 
     /* always transform when convert */
-    if (ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
+    if (conf->output != NULL && ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
         if (ofmt.len > 2) {
             ctx->force = 1;
         }
     }
+    
 
     if (conf->filter == NGX_HTTP_IMAGE_SIZE) {
         return ngx_http_image_json(r, rc == NGX_OK ? ctx : NULL);
@@ -1305,13 +1305,13 @@ ngx_http_image_out(ngx_http_request_t *r, ngx_uint_t type, gdImagePtr img,
     u_char                        *out;
     ngx_int_t                      q;
     ngx_http_image_filter_conf_t  *conf;
-    ngx_str_t                      ofmt;
+    ngx_str_t                      ofmt = ngx_null_string;
 
     out = NULL;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
-
-    if (ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
+    
+    if (conf->output != NULL && ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
         if (ngx_strncmp(ofmt.data, "jpg", 3) == 0 || ngx_strncmp(ofmt.data, "jpeg", 4) == 0){
             type = NGX_HTTP_IMAGE_JPEG;
 
