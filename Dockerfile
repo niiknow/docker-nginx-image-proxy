@@ -1,4 +1,4 @@
-FROM hyperknot/baseimage16:1.0.1
+FROM hyperknot/baseimage16:1.0.2
 
 MAINTAINER friends@niiknow.org
 
@@ -13,6 +13,9 @@ ADD ./build/nginx_${NGINX_VERSION} /tmp
 # start
 RUN \
     cd /tmp \
+
+# increase ulimit
+    && echo "\n\n* soft nofile 800000\n* hard nofile 800000\n\n" >> /etc/security/limits.conf \
 
 # add nginx repo
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
