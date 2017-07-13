@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export NGINX_VERSION=1.13.1
+export NGINX_VERSION=1.13.3
 export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
 
 cd /tmp

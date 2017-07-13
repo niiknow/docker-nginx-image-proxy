@@ -1,4 +1,4 @@
-FROM hyperknot/baseimage16:1.0.1
+FROM hyperknot/baseimage16:1.0.2
 
 MAINTAINER friends@niiknow.org
 

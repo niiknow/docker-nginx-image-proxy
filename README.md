@@ -7,7 +7,7 @@ Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
 - [x] /healthcheck endpoint
 - [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504
-- [x] convert/force output to another format
+- [x] convert/force output to another format, support formats: bmp, jpg, png, gif, webp
 
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
