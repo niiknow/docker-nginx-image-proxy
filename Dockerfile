@@ -48,6 +48,11 @@ RUN \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && service nginx stop && update-rc.d -f nginx disable \
 
+# generate fake ssl for server conf, allow for replacing it later
+    && bash /root/bin/placeholder-ssl.sh \
+    && chown -R www-data:www-data /var/log/nginx \
+    && chown -R www-data:www-data /var/www \
+
 # cleanup
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \

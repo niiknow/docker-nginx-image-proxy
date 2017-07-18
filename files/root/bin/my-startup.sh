@@ -21,11 +21,11 @@ if [ -n "$SERVER_CONF" ] ; then
    curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
 fi
 
-if [ -n "$GEODB_URL" ] ; then
-   log "Updating geo DB"
-
-   mv /etc/nginx/GeoLiteCity.dat /etc/nginx/GeoLiteCity.bak
-   curl $GEODB_URL | gzip -d - > /etc/nginx/GeoLiteCity.dat
+ # only generate domain if not exists
+if [ -n "$CERT_BUNDLE" ] ; then
+   echo "$CERT_BUNDLE" > /etc/nginx/ssl/placeholder-fullchain.pem
+   echo "$CERT_KEY" > /etc/nginx/ssl/placeholder-privkey.pem
+   service nginx reload
 fi
 
 nginx -t || true
