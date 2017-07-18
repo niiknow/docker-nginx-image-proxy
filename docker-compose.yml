@@ -7,8 +7,6 @@ services:
         container_name: nginx-image-proxy
         environment:
           - SERVER_CONF=${SERVER_CONF}
-          - CERT_BUNDLE=${CERT_BUNDLE}
-          - CERT_KEY=${CERT_KEY}
         ports:
             - '80:80'
             - '443:443'

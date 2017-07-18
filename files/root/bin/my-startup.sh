@@ -17,14 +17,9 @@ function log {
 if [ -n "$SERVER_CONF" ] ; then
    log "Getting new server.conf"
 
-   mv /etc/nginx/sites-enabled/server.conf /etc/nginx/sites-enabled/server.bak
-   curl -SL $SERVER_CONF --output /etc/nginx/sites-enabled/server.conf
-fi
+   mv /app/etc/nginx/sites-enabled/server.conf /app/etc/nginx/sites-enabled/server.bak
+   curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
 
- # only generate domain if not exists
-if [ -n "$CERT_BUNDLE" ] ; then
-   echo "$CERT_BUNDLE" > /etc/nginx/ssl/placeholder-fullchain.pem
-   echo "$CERT_KEY" > /etc/nginx/ssl/placeholder-privkey.pem
    service nginx reload
 fi
 
