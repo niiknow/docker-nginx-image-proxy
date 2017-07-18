@@ -26,7 +26,7 @@ RUN \
 # update repo
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests \
-       nano libgd3 gettext-base unzip \
+       nano libgd3 gettext-base unzip rsync \
     && dpkg --configure -a \
 
 # install nginx
