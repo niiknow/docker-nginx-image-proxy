@@ -58,10 +58,20 @@ ADD ./files /
 RUN \
 # generate fake ssl for server conf, allow for replacing it later
     bash /root/bin/placeholder-ssl.sh \
-    && chown -R www-data:www-data /var/log/nginx
+
+# redirect /etc/nginx
+    && mv /etc/nginx   /app-start/etc/nginx \
+    && rm -rf /etc/nginx \
+    && ln -s /app/etc/nginx /etc/nginx \
+
+# redirect logs
+    && mkdir -p /app-start/var/log \
+    && mv /var/log/nginx   /app-start/var/log/nginx \
+    && rm -rf /var/log/nginx \
+    && ln -s /app/var/log/nginx /var/log/nginx
 
 EXPOSE 80 443
 
-VOLUME ["/etc/nginx"]
+VOLUME ["/app"]
 
 CMD ["/sbin/my_init"]
