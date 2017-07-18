@@ -8,6 +8,7 @@ Features:
 - [x] /healthcheck endpoint
 - [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504
 - [x] convert/force output to another format, support formats: bmp, jpg, png, gif, webp
+- [x] use custom ssl and saved config when you mount '/app' volume.  nginx logs has also been redirect so you can backup, such as aws s3 sync.  Just delete the default redirect to stdout/access.log and stderr/error.log files.
 
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
@@ -16,7 +17,7 @@ You have a huge repository of images that need dynamic resize and cropping.  Clo
 Unlike other libraries, this does not try to do every image transformation and/or caching.
 
 1.  For more advanced features such as: animated gif, face detection, auto image optimization, and others; we recommend using Cloudinary or similar service.
-2.  There is no plan for SSL or other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.  We love StackPath/MaxCDN EdgeRules™.
+2.  Outside of disk cache, there is no plan for other Caching methods.  We recommend putting a CDN in front, such as (MaxCDN/StackPath/KeyCDN), to provide caching and easy SSL.  We love StackPath/MaxCDN EdgeRules™.
 3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Upload the result to s3 with the same function.
 
 # build
