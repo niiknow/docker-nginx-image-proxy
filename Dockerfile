@@ -48,18 +48,20 @@ RUN \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && service nginx stop && update-rc.d -f nginx disable \
 
-# generate fake ssl for server conf, allow for replacing it later
-    && bash /root/bin/placeholder-ssl.sh \
-    && chown -R www-data:www-data /var/log/nginx \
-    && chown -R www-data:www-data /var/www \
-
 # cleanup
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \
     && rm -rf /var/lib/apt/lists/* /var/lib/log/* /tmp/* /var/tmp/*
 
 ADD ./files /
- 
-EXPOSE 80
+
+RUN \
+# generate fake ssl for server conf, allow for replacing it later
+    bash /root/bin/placeholder-ssl.sh \
+    && chown -R www-data:www-data /var/log/nginx
+
+EXPOSE 80 443
+
+VOLUME ["/etc/nginx"]
 
 CMD ["/sbin/my_init"]
