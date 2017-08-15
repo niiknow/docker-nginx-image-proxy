@@ -4,7 +4,7 @@ MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=1.13.3-1~xenial_amd64.deb
+    NGINX_VERSION=1.13.4-1~xenial_amd64.deb
 
 ADD ./build/nginx_${NGINX_VERSION} /tmp
 
