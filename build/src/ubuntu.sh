@@ -2,11 +2,16 @@
 
 export NGINX_VERSION=1.13.4
 export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
+export NGINX_DEVEL_KIT_VERSION=0.3.0
 export NGINX_SET_MISC_MODULE_VERSION=0.31
-export NGINX_MODULE_SOURCE=https://github.com
 cd /tmp
 
-curl -sL "$NGINX_MODULE_SOURCE/openresty/set-misc-nginx-module/archive/v$NGINX_SET_MISC_MODULE_VERSION.tar.gz" -o ngx-misc.tar.gz
+curl -sL "https://github.com/simpl/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
+mkdir -p /usr/src/nginx/ngx_devel_kit 
+tar -xof dev-kit.tar.gz -C /usr/src/nginx/ngx_devel_kit --strip-components=1
+rm dev-kit.tar.gz
+
+curl -sL "https://github.com/openresty/set-misc-nginx-module/archive/v$NGINX_SET_MISC_MODULE_VERSION.tar.gz" -o ngx-misc.tar.gz
 mkdir -p /usr/src/nginx/set-misc-nginx-module
 tar -xof ngx-misc.tar.gz -C /usr/src/nginx/set-misc-nginx-module --strip-components=1
 rm ngx-misc.tar.gz
@@ -32,7 +37,7 @@ cd ${NGINX_BUILD_DIR}/src/http/modules/
 mv ngx_http_image_filter_module.c ngx_http_image_filter_module.bak 
 mv /tmp/ngx_http_image_filter_module.c ./ngx_http_image_filter_module.c 
 
-sed -i "s/--with-http_ssl_module/--with-http_ssl_module --with-http_image_filter_module --add-module=/usr/src/nginx/set-misc-nginx-module /g" \
+sed -i "s/--with-http_ssl_module/--with-http_ssl_module --with-http_image_filter_module --add-module=\/usr\/src\/nginx\/ngx_devel_kit --add-module=\/usr\/src\/nginx\/set-misc-nginx-module /g" \
     ${NGINX_BUILD_DIR}/debian/rules 
 
 cd /usr/src/nginx
