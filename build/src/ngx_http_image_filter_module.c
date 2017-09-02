@@ -1326,8 +1326,10 @@ ngx_http_image_out(ngx_http_request_t *r, ngx_uint_t type, gdImagePtr img,
 
         } else if (ngx_strncmp(ofmt.data, "bmp", 3) == 0){
             type = NGX_HTTP_IMAGE_BMP;
+
         } else if (ngx_strncmp(ofmt.data, "tiff", 4) == 0){
-            type = NGX_HTTP_IMAGE_BMP;
+            type = NGX_HTTP_IMAGE_TIFF;
+            
         }
     }
 

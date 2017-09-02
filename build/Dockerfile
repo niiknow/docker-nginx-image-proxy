@@ -12,8 +12,8 @@ RUN \
     cd /tmp \
     && bash ubuntu.sh
 
-# docker run -it imageid /bin/bash
-# ftp passive
+# docker run -it -v ./:/backup imageid /bin/bash
+# copy image from inside to backup
 
 VOLUME ["/backup"]
 
