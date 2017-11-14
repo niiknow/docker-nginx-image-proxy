@@ -1,9 +1,5 @@
 #!/bin/bash
 
-export NGINX_VERSION=1.13.4
-export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
-export NGINX_DEVEL_KIT_VERSION=0.3.0
-export NGINX_SET_MISC_MODULE_VERSION=0.31
 cd /tmp
 
 curl -sL "https://github.com/simpl/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
@@ -33,6 +29,9 @@ mkdir -p /usr/src/nginx
 cd /usr/src/nginx
 apt-get source nginx=${NGINX_VERSION} -y 
 
+pwd
+ls -la 
+
 cd ${NGINX_BUILD_DIR}/src/http/modules/
 mv ngx_http_image_filter_module.c ngx_http_image_filter_module.bak 
 mv /tmp/ngx_http_image_filter_module.c ./ngx_http_image_filter_module.c 
@@ -45,3 +44,6 @@ apt-get build-dep nginx -y
 cd ${NGINX_BUILD_DIR}
 dpkg-buildpackage -uc -us -b
 
+cd /usr/src/nginx
+pwd
+ls -la

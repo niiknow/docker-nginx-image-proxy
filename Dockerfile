@@ -4,11 +4,29 @@ MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=1.13.4-1~xenial_amd64.deb
+    NGINX_VERSION=1.13.6
 
-ADD ./build/nginx_${NGINX_VERSION} /tmp
+ENV NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION} \
+    NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.31
 
-# ADD ./build/nginx-dbg_${NGINX_VERSION} /tmp
+ADD ./build/src/ /tmp/
+
+RUN \
+    cd /tmp \
+    && bash ubuntu.sh
+
+# build 2
+FROM hyperknot/baseimage16:1.0.2
+
+MAINTAINER friends@niiknow.org
+
+# files are nginx_***_adm64.deb or nginx-dbg_***_adm64.deb
+
+ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
+    TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
+    NGINX_VERSION=1.13.6-1~xenial_amd64.deb
+
+COPY --from=0 /usr/src/nginx/nginx_${NGINX_VERSION} /tmp
 
 # start
 RUN \

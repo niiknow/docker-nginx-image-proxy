@@ -5,8 +5,6 @@ services:
         image: niiknow/nginx-image-proxy
         restart: always
         container_name: nginx-image-proxy
-        environment:
-          - SERVER_CONF=${SERVER_CONF}
         ports:
             - '80:80'
             - '443:443'

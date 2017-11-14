@@ -1,5 +1,7 @@
-# Pure Nginx Image Resize/Crop Microservice
-Image cropping with gravity, resize and compress on the fly with nginx image_filter module.  A tiny docker container to build your own Cloudinary-like service.
+# nginx image proxy
+>High Performance and Low Resource Utilization Microservice
+
+image cropping with gravity, resize and compress on the fly with nginx **image_filter** module.  A tiny docker container to build your own Cloudinary-like service.
 
 Nginx module - https://github.com/niiknow/docker-nginx-image-proxy/blob/master/build/src/ngx_http_image_filter_module.c
 
@@ -10,7 +12,8 @@ Features:
 - [x] convert/force output to another format, support formats: bmp, jpg, png, gif, webp, and tiff 
 - [x] use custom ssl and saved config when you mount '/app' volume.  nginx logs has also been redirect so you can backup, such as aws s3 sync.  Just delete the default redirect to stdout/access.log and stderr/error.log files.
 - [x] support international characters in URL
-- [x] automatically follow redirect at origin  
+- [x] automatically follow redirect at origin 
+- [x] overridable nginx config - easily add secure link or additional nginx config
 
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
@@ -23,7 +26,11 @@ Unlike other libraries, this does not try to do every image transformation and/o
 3.  If you want thumbnail caching to s3, just write a lambda function and use this server to generate your thumbnail.  Upload the result to s3 with the same function.
 
 # build
+To achieve smaller/tiny microservice, this container utilize multi-stage build introduced in Docker 17.06; therefore, Docker 17.06+ is required to build.
+
+```
 docker build -t nginx-image-proxy .
+```
 
 # run
 docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
