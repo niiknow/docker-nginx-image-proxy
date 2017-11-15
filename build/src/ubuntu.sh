@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION} 
 cd /tmp
 
 curl -sL "https://github.com/simpl/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
