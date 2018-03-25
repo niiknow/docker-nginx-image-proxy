@@ -14,6 +14,10 @@ Features:
 - [x] support international characters in URL
 - [x] automatically follow redirect at origin 
 - [x] overridable nginx config - easily add secure link or additional nginx config
+- [x] watermark with
+```
+image_filter watermark /path/to/watermark.png [ bottom-right (default) | top-left | top-right | bottom-left | center ];
+```
 
 # What does this solve?
 You have a huge repository of images that need dynamic resize and cropping.  Cloudinary can be expensive and redundant if you run your own CDN in front of this microservice.
