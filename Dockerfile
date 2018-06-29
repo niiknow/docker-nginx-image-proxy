@@ -2,7 +2,7 @@ FROM hyperknot/baseimage16:1.0.4 AS buildstep
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.31 \
-    NGINX_VERSION=1.13.10
+    NGINX_VERSION=1.14.0
 ADD ./build/src/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
@@ -13,7 +13,7 @@ MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.13.10-1~xenial_amd64.deb \
+    NGINX_VERSION=_1.14.0-1~xenial_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -22,8 +22,8 @@ RUN cd /tmp \
     && echo "\n\n* soft nofile 800000\n* hard nofile 800000\n\n" >> /etc/security/limits.conf \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests \
        nano libgd3 gettext-base unzip rsync \
