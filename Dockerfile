@@ -1,19 +1,19 @@
-FROM hyperknot/baseimage16:1.0.4 AS buildstep
+FROM hyperknot/baseimage16:1.0.6 AS buildstep
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.31 \
-    NGINX_VERSION=1.14.0
+    NGINX_VERSION=1.14.1
 ADD ./build/src/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM hyperknot/baseimage16:1.0.4
+FROM hyperknot/baseimage16:1.0.6
 
 MAINTAINER friends@niiknow.org
 
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
     TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.14.0-1~xenial_amd64.deb \
+    NGINX_VERSION=_1.14.1-1~xenial_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
