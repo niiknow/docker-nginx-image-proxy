@@ -1,10 +1,17 @@
 #!/bin/bash
 
-export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION} 
+export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
 cd /tmp
 
-curl -sL "https://github.com/simpl/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
-mkdir -p /usr/src/nginx/ngx_devel_kit 
+apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests
+apt-get install -y --no-install-recommends --no-install-suggests curl unzip apt-transport-https \
+        apt-utils software-properties-common build-essential ca-certificates libssl-dev \
+        zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev gpg-agent
+
+dpkg --configure -a
+
+curl -sL "https://github.com/simplresty/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
+mkdir -p /usr/src/nginx/ngx_devel_kit
 tar -xof dev-kit.tar.gz -C /usr/src/nginx/ngx_devel_kit --strip-components=1
 rm dev-kit.tar.gz
 
@@ -13,32 +20,27 @@ mkdir -p /usr/src/nginx/set-misc-nginx-module
 tar -xof ngx-misc.tar.gz -C /usr/src/nginx/set-misc-nginx-module --strip-components=1
 rm ngx-misc.tar.gz
 
-curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - 
-cp /etc/apt/sources.list /etc/apt/sources.list.bak 
-echo "deb http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list 
-echo "deb-src http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list 
+curl -s https://nginx.org/keys/nginx_signing.key | apt-key add -
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
+echo "deb http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list
+echo "deb-src http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list
 
-apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests 
-apt-get install -y --no-install-recommends --no-install-suggests curl unzip apt-transport-https \
-        apt-utils software-properties-common build-essential ca-certificates libssl-dev \
-        zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev 
+apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests
 
-dpkg --configure -a 
-
-mkdir -p /usr/src/nginx 
+mkdir -p /usr/src/nginx
 
 cd /usr/src/nginx
-apt-get source nginx=${NGINX_VERSION} -y 
+apt-get source nginx=${NGINX_VERSION} -y
 
 pwd
-ls -la 
+ls -la
 
 cd ${NGINX_BUILD_DIR}/src/http/modules/
-mv ngx_http_image_filter_module.c ngx_http_image_filter_module.bak 
-mv /tmp/ngx_http_image_filter_module.c ./ngx_http_image_filter_module.c 
+mv ngx_http_image_filter_module.c ngx_http_image_filter_module.bak
+mv /tmp/ngx_http_image_filter_module.c ./ngx_http_image_filter_module.c
 
 sed -i "s/--with-http_ssl_module/--with-http_ssl_module --with-http_image_filter_module --add-module=\/usr\/src\/nginx\/ngx_devel_kit --add-module=\/usr\/src\/nginx\/set-misc-nginx-module /g" \
-    ${NGINX_BUILD_DIR}/debian/rules 
+    ${NGINX_BUILD_DIR}/debian/rules
 
 cd /usr/src/nginx
 apt-get build-dep nginx -y
