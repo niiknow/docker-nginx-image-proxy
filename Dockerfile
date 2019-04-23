@@ -18,10 +18,11 @@ RUN cd /tmp \
     && echo "\n\n* soft nofile 800000\n* hard nofile 800000\n\n" >> /etc/security/limits.conf \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests \
-       curl gpg-agent nano libgd3 gettext-base unzip rsync \
+       curl gpg-agent nano libgd3 gettext-base unzip rsync cron \
        apt-transport-https software-properties-common \
        ca-certificates \
     && dpkg --configure -a \
+    && touch /var/log/cron.log \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
     && echo "deb http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
