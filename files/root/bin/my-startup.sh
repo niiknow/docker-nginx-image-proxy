@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 function die {
    echo >&2 "$@"
    exit 1
@@ -23,4 +25,8 @@ if [ -n "$SERVER_CONF" ] ; then
    service nginx reload
 fi
 
-nginx -t || true
+echo "*** Running cron"
+cron 
+
+echo "*** Running nginx"
+exec /usr/sbin/nginx -g "daemon off;"

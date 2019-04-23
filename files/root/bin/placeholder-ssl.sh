@@ -14,12 +14,11 @@ PASSPHRASE=""
 # Set our CSR variables
 SUBJ="
 C=US
-ST=Minnesota
-O=
-localityName=MN
-commonName=$DOMAIN
-organizationalUnitName=
-emailAddress=
+ST=MINNESOTA
+L=MINNEAPOLIS
+O=NIIKNOW
+EMAIL=somebody@somewhere.com
+CN=$DOMAIN
 "
 
 # Create our SSL directory

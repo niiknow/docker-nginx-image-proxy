@@ -2,7 +2,7 @@
 
 export TERM=xterm
 
-# save environment variables for use later
+# save environment variables for use later in cron, if required
 env > /root/env.txt
 
 if [ -z "`ls /app --hide='lost+found'`" ]
