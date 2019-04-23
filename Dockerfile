@@ -1,7 +1,7 @@
 FROM ubuntu:18.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.32 \
-    NGINX_VERSION=1.14.2
+    NGINX_VERSION=1.16.0
 ADD ./build/src/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
@@ -9,7 +9,7 @@ RUN bash /tmp/ubuntu.sh
 FROM ubuntu:18.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.14.2-1~bionic_amd64.deb \
+    NGINX_VERSION=_1.16.0-1~bionic_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -29,6 +29,7 @@ RUN cd /tmp \
     && echo "deb-src http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
+    && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
     && rm -rf /etc/nginx/conf.d/default.conf \
     && mkdir -p /var/log/nginx \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
