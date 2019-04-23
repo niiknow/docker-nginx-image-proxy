@@ -30,10 +30,7 @@ RUN cd /tmp \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
     && rm -rf /etc/nginx/conf.d/default.conf \
-    && rm -f /etc/service/syslog-forwarder/down \
-    && rm -f /etc/service/cron/down \
-    && rm -f /etc/service/syslog-ng/down \
-    && rm -f /core \
+    && mkdir -p /var/log/nginx \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && service nginx stop && update-rc.d -f nginx disable \
