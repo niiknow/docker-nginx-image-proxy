@@ -96,19 +96,19 @@ And if that doesn't work, you can always use your custom nginx config by passing
 # Example 
 * Original Image - https://octodex.github.com/images/codercat.jpg - 896x896
 * Dynamic Height - http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg
-![Dynamic Height](http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg)
+![Dynamic Height](http://imageproxy.niiknow.org/rx/50/https://octodex.github.com/images/codercat.jpg?asdf)
 
 * Dynamic Width - http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg
-![Dynamic Width](http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg)
+![Dynamic Width](http://imageproxy.niiknow.org/rx/x100/https://octodex.github.com/images/codercat.jpg?asdf)
 
 * Fix Width and Height, fit - http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
-![Fix Width and Height - fit](http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
+![Fix Width and Height - fit](http://imageproxy.niiknow.org/rx/200x500/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg?asdf)
 
 * Resize with rotate, sharpen - http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
-![Resize with rotate, sharpen](http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
+![Resize with rotate, sharpen](http://imageproxy.niiknow.org/rx/100,r_90,e_50/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg?asdf)
 
 * Crop with gravity - http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
-![Crop with gravity](http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
+![Crop with gravity](http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg?asdf)
 
 * Scale with watermark - http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg
 ![Scale with watermark](http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg)
