@@ -17,7 +17,7 @@ Features:
 - [x] watermark with
 ```shell
 # file must be png
-image_filter_water_file /path/to/file/watermark.png;
+image_filter_water_image /path/to/file/watermark.png;
 
 # optional watermark positioning
 image_filter_water_pos [ top-left | top-right | center | bottom-left | bottom-right (default)];
