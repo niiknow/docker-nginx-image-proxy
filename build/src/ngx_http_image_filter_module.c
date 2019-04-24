@@ -10,7 +10,7 @@
 #include <ngx_http.h>
 
 #include <gd.h>
-
+#include <math.h>
 
 #define NGX_HTTP_IMAGE_OFF       0
 #define NGX_HTTP_IMAGE_TEST      1
@@ -20,7 +20,7 @@
 #define NGX_HTTP_IMAGE_ROTATE    5
 #define NGX_HTTP_IMAGE_CROP_KEEPX       6
 #define NGX_HTTP_IMAGE_CROP_KEEPY       7
-#define NGX_HTTP_IMAGE_WATERMARK 8
+#define NGX_HTTP_IMAGE_SCALE     8 // experimental image resize
 
 
 #define NGX_HTTP_IMAGE_START     0
@@ -47,7 +47,6 @@
 
 #define NGX_HTTP_IMAGE_BUFFERED  0x08
 
-
 typedef struct {
     ngx_uint_t                   filter;
     ngx_uint_t                   width;
@@ -58,11 +57,12 @@ typedef struct {
     ngx_uint_t                   sharpen;
     ngx_uint_t                   offset_x;
     ngx_uint_t                   offset_y;
+    ngx_uint_t                   ratio_max;
 
     ngx_flag_t                   transparency;
     ngx_flag_t                   interlace;
-    ngx_str_t                    watermark;
-    ngx_str_t                    watermark_position;
+    ngx_str_t                    water_image;
+    ngx_str_t                    water_pos;
     ngx_http_complex_value_t    *output;
 
     ngx_http_complex_value_t    *wcv;
@@ -91,6 +91,7 @@ typedef struct {
     ngx_uint_t                   offset_x;
     ngx_uint_t                   offset_y;
     ngx_uint_t                   angle;
+    ngx_uint_t                   ratio_max;
 
     ngx_uint_t                   phase;
     ngx_uint_t                   type;
@@ -139,6 +140,10 @@ static char *ngx_http_image_filter_sharpen(ngx_conf_t *cf, ngx_command_t *cmd,
 static char *ngx_http_image_filter_offset(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
 static ngx_int_t ngx_http_image_filter_init(ngx_conf_t *cf);
+static void ngx_http_image_watermark(ngx_http_request_t *r, 
+    ngx_http_image_filter_conf_t *conf, gdImagePtr src);
+static int my_offset(int calculatedLength, int requestedLength);
+static void my_resize(gdImagePtr original, gdImagePtr destination);
 
 static ngx_command_t  ngx_http_image_filter_commands[] = {
 
@@ -205,18 +210,25 @@ static ngx_command_t  ngx_http_image_filter_commands[] = {
       0,
       NULL },
 
-    { ngx_string("image_filter_watermark"),
+    { ngx_string("image_filter_ratio_max"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
+      ngx_conf_set_num_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_image_filter_conf_t, watermark),
+      offsetof(ngx_http_image_filter_conf_t, ratio_max),
       NULL },
 
-    { ngx_string("image_filter_watermark_position"),
+    { ngx_string("image_filter_water_image"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_image_filter_conf_t, watermark_position),
+      offsetof(ngx_http_image_filter_conf_t, water_image),
+      NULL },
+
+    { ngx_string("image_filter_water_pos"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_image_filter_conf_t, water_pos),
       NULL },
 
       ngx_null_command
@@ -266,7 +278,6 @@ static ngx_str_t  ngx_http_image_types[] = {
     ngx_string("image/bmp"),
     ngx_string("image/tiff")
 };
-
 
 static ngx_int_t
 ngx_http_image_header_filter(ngx_http_request_t *r)
@@ -643,25 +654,19 @@ ngx_http_image_process(ngx_http_request_t *r)
         return ngx_http_image_resize(r, ctx);
     }
 
-    if (conf->filter == NGX_HTTP_IMAGE_WATERMARK) {
-
-        if (!conf->watermark.data) {
-            return NULL;
-        }
-
-        return ngx_http_image_resize(r, ctx);
-    }
-
-
     ctx->max_width = ngx_http_image_filter_get_value(r, conf->wcv, conf->width);
     if (ctx->max_width == 0) {
         return NULL;
     }
 
-    ctx->max_height = ngx_http_image_filter_get_value(r, conf->hcv,
-                                                      conf->height);
+    ctx->max_height = ngx_http_image_filter_get_value(r, conf->hcv, conf->height);
     if (ctx->max_height == 0) {
         return NULL;
+    }
+
+    // it's ok since we simply center image
+    if (conf->filter == NGX_HTTP_IMAGE_SCALE) {
+        ctx->force = 1;
     }
 
     if (rc == NGX_OK
@@ -927,7 +932,6 @@ ngx_http_image_size(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
     return NGX_OK;
 }
 
-
 static ngx_buf_t *
 ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
 {
@@ -936,6 +940,7 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
                                    red, green, blue, t,
                                    offset_x, offset_y;
     u_char                        *out;
+    double                         ratio_max, ratio;
     ngx_buf_t                     *b;
     ngx_uint_t                     resize;
     gdImagePtr                     src, dst;
@@ -985,13 +990,63 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
 
 transparent:
 
+    // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize started \n");
+
+    // pre-resize if using method2
+    if (conf->filter == NGX_HTTP_IMAGE_SCALE) {
+        conf->filter = NGX_HTTP_IMAGE_RESIZE;
+        // don't allow bigger than double the size?
+        ratio_max  = (double) conf->ratio_max;
+        ratio      = ((double) ctx->max_width / (double) sx);
+        if (ratio > ratio_max) {
+          ratio = ratio_max;
+        }
+
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 ratio = %d, %d \n", 
+        //  ratio, ratio);
+        
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 mw = %d, %d \n", 
+        //  ctx->max_width, ctx->max_width);
+
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 mw = %d, %d \n", 
+        //  sx, sx);
+
+        // if source is smaller, enlarge it
+        // resize to smaller can be handled later
+        if (ratio > 1) {
+          // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize2 here %d, %d \n", ratio, ratio);
+
+          dst = gdImageCreateTrueColor(sx * ratio, sy * ratio);
+
+          if (transparent == -1) {
+              gdImageSaveAlpha(src, 1);
+              gdImageColorTransparent(src, -1);
+
+              if(colors == 0)
+              {
+                gdImageAlphaBlending(dst, 0);
+                gdImageSaveAlpha(dst, 1);
+              } else {
+                gdImageTrueColorToPalette(dst, 1, 256);
+              }
+          }
+
+          my_resize(src, dst);
+          // set the new original
+          gdImageDestroy(src);
+          src = dst;
+        }
+    }
+
+    sx = gdImageSX(src);
+    sy = gdImageSY(src);
+
     gdImageColorTransparent(src, -1);
 
     dx = sx;
     dy = sy;
 
     if (conf->filter == NGX_HTTP_IMAGE_RESIZE) {
-
         if ((ngx_uint_t) dx > ctx->max_width) {
             dy = dy * ctx->max_width / dx;
             dy = dy ? dy : 1;
@@ -1007,10 +1062,6 @@ transparent:
         resize = 1;
 
     } else if (conf->filter == NGX_HTTP_IMAGE_ROTATE) {
-
-        resize = 0;
-
-    } else if (conf->filter == NGX_HTTP_IMAGE_WATERMARK) {
 
         resize = 0;
 
@@ -1193,55 +1244,13 @@ transparent:
         gdImageColorTransparent(dst, gdImageColorExact(dst, red, green, blue));
     }
 
-    if (conf->filter == NGX_HTTP_IMAGE_WATERMARK && conf->watermark.data) {
-        FILE *watermark_file = fopen((const char *)conf->watermark.data, "r");
-
-        if (watermark_file) {
-            gdImagePtr watermark, watermark_mix;
-            ngx_int_t wdx = 0, wdy = 0;
-
-            watermark = gdImageCreateFromPng(watermark_file);
-            fclose(watermark_file);
-
-            if(watermark != NULL) {
-                watermark_mix = gdImageCreateTrueColor(watermark->sx, watermark->sy);
-
-                if (ngx_strcmp(conf->watermark_position.data, "bottom-right") == 0) {
-                    wdx = dx - watermark->sx - 10;
-                    wdy = dy - watermark->sy - 10;
-                } else if (ngx_strcmp(conf->watermark_position.data, "top-left") == 0) {
-                    wdx = wdy = 10;
-                } else if (ngx_strcmp(conf->watermark_position.data, "top-right") == 0) {
-                    wdx = dx - watermark->sx - 10;
-                    wdy = 10;
-                } else if (ngx_strcmp(conf->watermark_position.data, "bottom-left") == 0) {
-                    wdx = 10;
-                    wdy = dy - watermark->sy - 10;
-                } else if (ngx_strcmp(conf->watermark_position.data, "center") == 0) {
-                    wdx = dx / 2 - watermark->sx / 2;
-                    wdy = dy / 2 - watermark->sy / 2;
-                }
-
-                gdImageCopy(watermark_mix, dst, 0, 0, wdx, wdy, watermark->sx, watermark->sy);
-                gdImageCopy(watermark_mix, watermark, 0, 0, 0, 0, watermark->sx, watermark->sy);
-                gdImageCopyMerge(dst, watermark_mix, wdx, wdy, 0, 0, watermark->sx, watermark->sy, 75);
-                gdImageDestroy(watermark);
-                gdImageDestroy(watermark_mix);
-
-            } else { ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "watermark file '%s' is not PNG", conf->watermark.data);}
-
-        } else {
-
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "watermark file '%s' not found", conf->watermark.data);
-        }
-    }
-
     sharpen = ngx_http_image_filter_get_value(r, conf->shcv, conf->sharpen);
     if (sharpen > 0) {
         gdImageSharpen(dst, sharpen);
     }
 
     gdImageInterlace(dst, (int) conf->interlace);
+    ngx_http_image_watermark(r, conf, dst);
 
     out = ngx_http_image_out(r, ctx->type, dst, &size);
 
@@ -1384,7 +1393,7 @@ ngx_http_image_out(ngx_http_request_t *r, ngx_uint_t type, gdImagePtr img,
     out = NULL;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
-    
+
     if (conf->output != NULL && ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
         if (ngx_strncmp(ofmt.data, "jpg", 3) == 0 || ngx_strncmp(ofmt.data, "jpeg", 4) == 0){
             type = NGX_HTTP_IMAGE_JPEG;
@@ -1570,6 +1579,7 @@ ngx_http_image_filter_create_conf(ngx_conf_t *cf)
     conf->buffer_size = NGX_CONF_UNSET_SIZE;
     conf->offset_x = NGX_CONF_UNSET_UINT;
     conf->offset_y = NGX_CONF_UNSET_UINT;
+    conf->ratio_max = NGX_CONF_UNSET_UINT;
 
     return conf;
 }
@@ -1632,9 +1642,9 @@ ngx_http_image_filter_merge_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_conf_merge_size_value(conf->buffer_size, prev->buffer_size,
                               1 * 1024 * 1024);
 
-    ngx_conf_merge_str_value(conf->watermark, prev->watermark, "");
+    ngx_conf_merge_str_value(conf->water_image, prev->water_image, "");
 
-    ngx_conf_merge_str_value(conf->watermark_position, prev->watermark_position, "bottom-right");
+    ngx_conf_merge_str_value(conf->water_pos, prev->water_pos, "bottom-right");
 
     if (conf->offset_x == NGX_CONF_UNSET_UINT) {
         ngx_conf_merge_uint_value(conf->offset_x, prev->offset_x,
@@ -1652,6 +1662,11 @@ ngx_http_image_filter_merge_conf(ngx_conf_t *cf, void *parent, void *child)
         if (conf->oycv == NULL) {
             conf->oycv = prev->oycv;
         }
+    }
+
+    if (conf->ratio_max == NGX_CONF_UNSET_UINT) {
+        /* 2 is the default max ratio */
+        ngx_conf_merge_uint_value(conf->ratio_max, prev->ratio_max, 2);
     }
 
     if (conf->output == NULL) {
@@ -1697,7 +1712,8 @@ ngx_http_image_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         if (ngx_strcmp(value[i].data, "rotate") == 0) {
             if (imcf->filter != NGX_HTTP_IMAGE_RESIZE
-                && imcf->filter != NGX_HTTP_IMAGE_CROP)
+                && imcf->filter != NGX_HTTP_IMAGE_CROP
+                && imcf->filter != NGX_HTTP_IMAGE_SCALE)
             {
                 imcf->filter = NGX_HTTP_IMAGE_ROTATE;
             }
@@ -1733,21 +1749,9 @@ ngx_http_image_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
             return NGX_CONF_OK;
 
-        } else if (ngx_strcmp(value[i].data, "watermark") == 0) {
-            imcf->filter = NGX_HTTP_IMAGE_WATERMARK;
-            imcf->watermark = value[2];
-            return NGX_CONF_OK;
-
         } else {
             goto failed;
         }
-    }
-
-    if ((ngx_strcmp(value[i].data, "watermark") == 0) && cf->args->nelts == 4) {
-        imcf->filter = NGX_HTTP_IMAGE_WATERMARK;
-        imcf->watermark = value[2];
-        imcf->watermark_position = value[3];
-        return NGX_CONF_OK;
     }
 
     if (ngx_strcmp(value[i].data, "resize") == 0) {
@@ -1755,6 +1759,9 @@ ngx_http_image_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     } else if (ngx_strcmp(value[i].data, "crop") == 0) {
         imcf->filter = NGX_HTTP_IMAGE_CROP;
+
+    } else if (ngx_strcmp(value[i].data, "scale") == 0) {
+        imcf->filter = NGX_HTTP_IMAGE_SCALE;
 
     } else {
         goto failed;
@@ -2041,3 +2048,107 @@ ngx_http_image_filter_init(ngx_conf_t *cf)
 }
 
 
+static void 
+ngx_http_image_watermark(ngx_http_request_t *r, ngx_http_image_filter_conf_t *conf, gdImagePtr src)
+{
+    // apply watermark
+    if (ngx_strcmp(conf->water_image.data, "") == 0) {
+      return;
+    }
+
+    int dx, dy;
+
+    dx = gdImageSX(src);
+    dy = gdImageSY(src);
+
+    FILE *watermark_file = fopen((const char *)conf->water_image.data, "r");
+
+    if (watermark_file) {
+        gdImagePtr watermark, watermark_mix;
+        ngx_int_t wdx = 0, wdy = 0;
+
+        watermark = gdImageCreateFromPng(watermark_file);
+        fclose(watermark_file);
+
+        if(watermark != NULL) {
+            watermark_mix = gdImageCreateTrueColor(watermark->sx, watermark->sy);
+
+            if (ngx_strcmp(conf->water_pos.data, "top-left") == 0) {
+                wdx = wdy = 10;
+            } else if (ngx_strcmp(conf->water_pos.data, "top-right") == 0) {
+                wdx = dx - watermark->sx - 10;
+                wdy = 10;
+            } else if (ngx_strcmp(conf->water_pos.data, "center") == 0) {
+                wdx = dx / 2 - watermark->sx / 2;
+                wdy = dy / 2 - watermark->sy / 2;
+            } else if (ngx_strcmp(conf->water_pos.data, "bottom-left") == 0) {
+                wdx = 10;
+                wdy = dy - watermark->sy - 10;
+            } else { // default bottom-right
+                wdx = dx - watermark->sx - 10;
+                wdy = dy - watermark->sy - 10;
+            }
+
+            // if watermark is larger than image set start to 0
+            if (wdx < 0) {
+              wdx = 0;
+            }
+            if (wdy < 0) {
+              wdy = 0;
+            }
+
+            gdImageCopy(watermark_mix, src, 0, 0, wdx, wdy, watermark->sx, watermark->sy);
+            gdImageCopy(watermark_mix, watermark, 0, 0, 0, 0, watermark->sx, watermark->sy);
+            gdImageCopyMerge(src, watermark_mix, wdx, wdy, 0, 0, watermark->sx, watermark->sy, 75);
+            gdImageDestroy(watermark);
+            gdImageDestroy(watermark_mix);
+        } else { 
+          ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "watermark file '%s' is not PNG", conf->water_image.data);
+        }
+    } else {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "watermark file '%s' not found", conf->water_image.data);
+    }
+}
+
+
+static int my_offset(int calculatedLength, int requestedLength) {
+    int offset = 0;
+
+    if (calculatedLength > requestedLength) {
+        offset = (int)((calculatedLength - requestedLength) / 2);
+    }
+    else {
+        offset = (int)((requestedLength - calculatedLength) / 2);
+    }
+
+    return (offset);
+}
+
+
+static void my_resize (gdImagePtr original, gdImagePtr destination) {
+    float originalRatio = (float)original->sx / original->sy;
+    float destinationRatio = (float)destination->sx / destination->sy;
+
+    int destinationX = destination->sx;
+    int destinationY = destination->sy;
+
+    if (destinationRatio > originalRatio) {
+        destinationX = floor(destination->sy * originalRatio);
+    }
+    else {
+        destinationY = floor(destination->sx / originalRatio);
+    }
+
+    gdImageCopyResampled(
+        destination,
+        original,
+        my_offset(destinationX, destination->sx),
+        my_offset(destinationY, destination->sy),
+        0,
+        0,
+        destinationX,
+        destinationY,
+        original->sx,
+        original->sy
+    );
+}

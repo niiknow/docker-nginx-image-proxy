@@ -15,8 +15,29 @@ Features:
 - [x] automatically follow redirect at origin 
 - [x] overridable nginx config - easily add secure link or additional nginx config
 - [x] watermark with
+```shell
+# file must be png
+image_filter_water_file /path/to/file/watermark.png;
+
+# optional watermark positioning
+image_filter_water_pos [ top-left | top-right | center | bottom-left | bottom-right (default)];
 ```
-image_filter watermark /path/to/watermark.png [ bottom-right (default) | top-left | top-right | bottom-left | center ];
+> TIP: The implementation of watermark feature, at the moment, is a very naive one.  Due to limited functionality, it add watermark after the image has been resized.  It work best when resize to smaller image/thumbnail and use in combination of a smaller watermark image.  We may expand on the functionality in the future, if we have time.
+
+- [x] resize support image scale (enlarge image)
+```shell
+# similar to "resize", but if the image is smaller than the requested size
+# it try to scale the image up to image_filter_ratio_max before it
+# perform the resize
+image_filter scale width height;
+
+# optional scale max ratio, default 2 or max of 2x the original image size
+# becareful not to set this too high or it will use too much memory.
+# 
+# For example a 200KB JPEG file (1024x768) will take up 4MB of memory 
+# when loaded, but when resampled to twice the the size the memory 
+# use jumps to 20.1MB
+image_filter_ratio_max 3;
 ```
 
 # What does this solve?
