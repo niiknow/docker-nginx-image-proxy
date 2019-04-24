@@ -110,6 +110,7 @@ And if that doesn't work, you can always use your custom nginx config by passing
 * Crop with gravity - http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg
 ![Crop with gravity](http://imageproxy.niiknow.org/rx/100x100,c_1,g_Center/https://static.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg)
 
-* Scale with watermark - http://imageproxy.niiknow.org/rx/2000,w_1/https://octodex.github.com/images/codercat.jpg
+* Scale with watermark - http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg
+![Scale with watermark](http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg)
 
 # MIT
