@@ -20,7 +20,6 @@
 #define NGX_HTTP_IMAGE_ROTATE    5
 #define NGX_HTTP_IMAGE_CROP_KEEPX       6
 #define NGX_HTTP_IMAGE_CROP_KEEPY       7
-#define NGX_HTTP_IMAGE_SCALE     8 // experimental image resize
 
 
 #define NGX_HTTP_IMAGE_START     0
@@ -57,7 +56,7 @@ typedef struct {
     ngx_uint_t                   sharpen;
     ngx_uint_t                   offset_x;
     ngx_uint_t                   offset_y;
-    ngx_uint_t                   ratio_max;
+    ngx_uint_t                   scale_max;
 
     ngx_flag_t                   transparency;
     ngx_flag_t                   interlace;
@@ -91,7 +90,7 @@ typedef struct {
     ngx_uint_t                   offset_x;
     ngx_uint_t                   offset_y;
     ngx_uint_t                   angle;
-    ngx_uint_t                   ratio_max;
+    ngx_uint_t                   scale_max;
 
     ngx_uint_t                   phase;
     ngx_uint_t                   type;
@@ -210,11 +209,11 @@ static ngx_command_t  ngx_http_image_filter_commands[] = {
       0,
       NULL },
 
-    { ngx_string("image_filter_ratio_max"),
+    { ngx_string("image_filter_scale_max"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_num_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_image_filter_conf_t, ratio_max),
+      offsetof(ngx_http_image_filter_conf_t, scale_max),
       NULL },
 
     { ngx_string("image_filter_water_image"),
@@ -664,8 +663,8 @@ ngx_http_image_process(ngx_http_request_t *r)
         return NULL;
     }
 
-    // it's ok since we simply center image
-    if (conf->filter == NGX_HTTP_IMAGE_SCALE) {
+    // scale would force to resize image
+    if (conf->scale_max > 1) {
         ctx->force = 1;
     }
 
@@ -940,7 +939,7 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
                                    red, green, blue, t,
                                    offset_x, offset_y;
     u_char                        *out;
-    double                         ratio_max, ratio, ratio_h;
+    double                         scale_max, ratio, ratio_h;
     ngx_buf_t                     *b;
     ngx_uint_t                     resize;
     gdImagePtr                     src, dst;
@@ -993,18 +992,16 @@ transparent:
     // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize started \n");
 
     // pre-resize if using scale
-    if (conf->filter == NGX_HTTP_IMAGE_SCALE) {
-        conf->filter = NGX_HTTP_IMAGE_RESIZE;
-        // don't allow bigger than double the size?
-        ratio_max  = (double) conf->ratio_max;
+    if (conf->scale_max > 1) {
+        scale_max  = (double) conf->scale_max;
         ratio      = ((double) ctx->max_width / (double) sx);
         ratio_h    = ((double) ctx->max_height / (double) sy);
         if (ratio_h > ratio) {
           ratio = ratio_h;
         }
 
-        if (ratio > ratio_max) {
-          ratio = ratio_max;
+        if (ratio > scale_max) {
+          ratio = scale_max;
         }
 
         //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale ratio = %d, %d \n", 
@@ -1587,7 +1584,7 @@ ngx_http_image_filter_create_conf(ngx_conf_t *cf)
     conf->buffer_size = NGX_CONF_UNSET_SIZE;
     conf->offset_x = NGX_CONF_UNSET_UINT;
     conf->offset_y = NGX_CONF_UNSET_UINT;
-    conf->ratio_max = NGX_CONF_UNSET_UINT;
+    conf->scale_max = NGX_CONF_UNSET_UINT;
 
     return conf;
 }
@@ -1672,9 +1669,9 @@ ngx_http_image_filter_merge_conf(ngx_conf_t *cf, void *parent, void *child)
         }
     }
 
-    if (conf->ratio_max == NGX_CONF_UNSET_UINT) {
+    if (conf->scale_max == NGX_CONF_UNSET_UINT) {
         /* 2 is the default max ratio */
-        ngx_conf_merge_uint_value(conf->ratio_max, prev->ratio_max, 2);
+        ngx_conf_merge_uint_value(conf->scale_max, prev->scale_max, 1);
     }
 
     if (conf->output == NULL) {
@@ -1720,8 +1717,7 @@ ngx_http_image_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         if (ngx_strcmp(value[i].data, "rotate") == 0) {
             if (imcf->filter != NGX_HTTP_IMAGE_RESIZE
-                && imcf->filter != NGX_HTTP_IMAGE_CROP
-                && imcf->filter != NGX_HTTP_IMAGE_SCALE)
+                && imcf->filter != NGX_HTTP_IMAGE_CROP)
             {
                 imcf->filter = NGX_HTTP_IMAGE_ROTATE;
             }
@@ -1767,9 +1763,6 @@ ngx_http_image_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     } else if (ngx_strcmp(value[i].data, "crop") == 0) {
         imcf->filter = NGX_HTTP_IMAGE_CROP;
-
-    } else if (ngx_strcmp(value[i].data, "scale") == 0) {
-        imcf->filter = NGX_HTTP_IMAGE_SCALE;
 
     } else {
         goto failed;

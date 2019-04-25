@@ -26,18 +26,13 @@ image_filter_water_pos [ top-left | top-right | center | bottom-left | bottom-ri
 
 - [x] resize support image scale (enlarge image)
 ```shell
-# similar to "resize", but if the image is smaller than the requested size
-# it try to scale the image up to image_filter_ratio_max before it
-# perform the resize
-image_filter scale width height;
-
-# optional scale max ratio, default 2 or max of 2x the original image size
+# optional scale max ratio, default 1
 # becareful not to set this too high or it will use too much memory.
 # 
 # For example a 200KB JPEG file (1024x768) will take up 4MB of memory 
-# when loaded, but when resampled to twice the the size the memory 
+# when loaded; but when resampled to twice the the size, the memory 
 # use jumps to 20.1MB
-image_filter_ratio_max 3;
+image_filter_scale_max 3;
 ```
 
 # What does this solve?
