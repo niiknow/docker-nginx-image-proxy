@@ -940,7 +940,7 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
                                    red, green, blue, t,
                                    offset_x, offset_y;
     u_char                        *out;
-    double                         ratio_max, ratio;
+    double                         ratio_max, ratio, ratio_h;
     ngx_buf_t                     *b;
     ngx_uint_t                     resize;
     gdImagePtr                     src, dst;
@@ -992,31 +992,40 @@ transparent:
 
     // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize started \n");
 
-    // pre-resize if using method2
+    // pre-resize if using scale
     if (conf->filter == NGX_HTTP_IMAGE_SCALE) {
         conf->filter = NGX_HTTP_IMAGE_RESIZE;
         // don't allow bigger than double the size?
         ratio_max  = (double) conf->ratio_max;
         ratio      = ((double) ctx->max_width / (double) sx);
+        ratio_h    = ((double) ctx->max_height / (double) sy);
+        if (ratio_h > ratio) {
+          ratio = ratio_h;
+        }
+
         if (ratio > ratio_max) {
           ratio = ratio_max;
         }
 
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 ratio = %d, %d \n", 
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale ratio = %d, %d \n", 
         //  ratio, ratio);
         
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 mw = %d, %d \n", 
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale mw = %d, %d \n", 
         //  ctx->max_width, ctx->max_width);
 
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "resize2 mw = %d, %d \n", 
+        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale mw = %d, %d \n", 
         //  sx, sx);
 
         // if source is smaller, enlarge it
         // resize to smaller can be handled later
         if (ratio > 1) {
-          // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize2 here %d, %d \n", ratio, ratio);
-
-          dst = gdImageCreateTrueColor(sx * ratio, sy * ratio);
+          // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale %d, %d \n", ratio, ratio);
+          dst = ngx_http_image_new(r, sx * ratio, sy * ratio, palette);
+          
+          if (dst == NULL) {
+              gdImageDestroy(src);
+              return NULL;
+          }
 
           if (transparent == -1) {
               gdImageSaveAlpha(src, 1);
@@ -1024,10 +1033,10 @@ transparent:
 
               if(colors == 0)
               {
-                gdImageAlphaBlending(dst, 0);
-                gdImageSaveAlpha(dst, 1);
+                  gdImageAlphaBlending(dst, 0);
+                  gdImageSaveAlpha(dst, 1);
               } else {
-                gdImageTrueColorToPalette(dst, 1, 256);
+                  gdImageTrueColorToPalette(dst, 1, 256);
               }
           }
 
@@ -1035,11 +1044,10 @@ transparent:
           // set the new original
           gdImageDestroy(src);
           src = dst;
+          sx = gdImageSX(src);
+          sy = gdImageSY(src);
         }
     }
-
-    sx = gdImageSX(src);
-    sy = gdImageSY(src);
 
     gdImageColorTransparent(src, -1);
 
