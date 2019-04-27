@@ -108,4 +108,7 @@ And if that doesn't work, you can always use your custom nginx config by passing
 * Scale with watermark - http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg
 ![Scale with watermark](http://imageproxy.niiknow.org/rx/2000,water_1/https://octodex.github.com/images/codercat.jpg)
 
+# Point of Interest
+* [images.weserv.nl](https://github.com/weserv/images) is another great project to look at if you need additional features with image resizing.  The original purpose of this library (nginx-image-proxy) is to provide high performance and low resource utilization image private microservice.  We searched high and low but did not find a good solution.  At that time, we saw great potential with images.weserv.nl, but was held back because it was using php.  Since July 2018, it was rewritten with lua and direct c binding; as a result, it has became the next best solution and continue to improve.  The authors also generiously provide free endpoint for public use.  This help prove their implementation to be well battle-tested for use in any production environment.
+
 # MIT
