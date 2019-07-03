@@ -3,8 +3,8 @@
 export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
 cd /tmp
 
-apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests
-apt-get install -y --no-install-recommends --no-install-suggests curl unzip apt-transport-https \
+apt-get update
+apt-get install -y --no-install-recommends --no-install-suggests curl apt-transport-https \
         apt-utils software-properties-common build-essential ca-certificates libssl-dev \
         zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev gpg-agent
 

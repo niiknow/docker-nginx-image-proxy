@@ -936,10 +936,10 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
 {
     int                            sx, sy, dx, dy, ox, oy, ax, ay, size,
                                    colors, palette, transparent, sharpen,
-                                   red, green, blue, t,
+                                   red, green, blue, t, scale_max,
                                    offset_x, offset_y;
     u_char                        *out;
-    double                         scale_max, ratio, ratio_h;
+    double                         ratio, ratio_h;
     ngx_buf_t                     *b;
     ngx_uint_t                     resize;
     gdImagePtr                     src, dst;
@@ -952,10 +952,11 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
         return NULL;
     }
 
-    sx = gdImageSX(src);
-    sy = gdImageSY(src);
-
-    conf = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
+    sx        = gdImageSX(src);
+    sy        = gdImageSY(src);
+    conf      = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
+    scale_max = (int) conf->scale_max;
+    ratio     = 1;
 
     if (!ctx->force
         && ctx->angle == 0
@@ -989,61 +990,61 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
 
 transparent:
 
-    // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "FUNC  resize started \n");
+    if ((int)ctx->max_width > 0) {
+      ratio = ((double) ctx->max_width / (double) sx);
+    }
 
-    // pre-resize if using scale
-    if (conf->scale_max > 1) {
-        scale_max  = (double) conf->scale_max;
-        ratio      = ((double) ctx->max_width / (double) sx);
-        ratio_h    = ((double) ctx->max_height / (double) sy);
-        if (ratio_h > ratio) {
-          ratio = ratio_h;
+    if ((int)ctx->max_height > 0) {
+      ratio_h = ((double) ctx->max_height / (double) sy);
+      if (ratio_h > ratio) {
+        ratio = ratio_h;
+      }
+    }
+
+    // pre-resize if using scale and required a larger image
+    if (scale_max > 1) {
+      if (ratio > 1) {
+        // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale max = %d, %d \n", scale_max, scale_max);
+        // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale ratio = %d, %d \n", ratio, ratio);
+
+        if (ratio > (double) scale_max) {
+          ratio = (double) scale_max;
         }
 
-        if (ratio > scale_max) {
-          ratio = scale_max;
-        }
+        /*
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "width max = %d, %d \n", ctx->max_width, ctx->max_width);
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "width img = %d, %d \n", sx, sx);
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "height max = %d, %d \n", ctx->max_height, ctx->max_height);
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "height img = %d, %d \n", sy, sy);
+        */
 
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale ratio = %d, %d \n", 
-        //  ratio, ratio);
+        // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale %d, %d \n", ratio, ratio);
+        dst = ngx_http_image_new(r, sx * ratio, sy * ratio, palette);
         
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale mw = %d, %d \n", 
-        //  ctx->max_width, ctx->max_width);
-
-        //ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale mw = %d, %d \n", 
-        //  sx, sx);
-
-        // if source is smaller, enlarge it
-        // resize to smaller can be handled later
-        if (ratio > 1) {
-          // ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "scale %d, %d \n", ratio, ratio);
-          dst = ngx_http_image_new(r, sx * ratio, sy * ratio, palette);
-          
-          if (dst == NULL) {
-              gdImageDestroy(src);
-              return NULL;
-          }
-
-          if (transparent == -1) {
-              gdImageSaveAlpha(src, 1);
-              gdImageColorTransparent(src, -1);
-
-              if(colors == 0)
-              {
-                  gdImageAlphaBlending(dst, 0);
-                  gdImageSaveAlpha(dst, 1);
-              } else {
-                  gdImageTrueColorToPalette(dst, 1, 256);
-              }
-          }
-
-          my_resize(src, dst);
-          // set the new original
-          gdImageDestroy(src);
-          src = dst;
-          sx = gdImageSX(src);
-          sy = gdImageSY(src);
+        if (dst == NULL) {
+            gdImageDestroy(src);
+            return NULL;
         }
+
+        if (transparent == -1) {
+            gdImageSaveAlpha(src, 1);
+            gdImageColorTransparent(src, -1);
+
+            if(colors == 0) {
+                gdImageAlphaBlending(dst, 0);
+                gdImageSaveAlpha(dst, 1);
+            } else {
+                gdImageTrueColorToPalette(dst, 1, 256);
+            }
+        }
+
+        my_resize(src, dst);
+        // set the new original
+        gdImageDestroy(src);
+        src = dst;
+        sx = gdImageSX(src);
+        sy = gdImageSY(src);
+      }
     }
 
     gdImageColorTransparent(src, -1);
