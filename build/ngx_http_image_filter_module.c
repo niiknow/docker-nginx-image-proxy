@@ -37,14 +37,13 @@
 #define NGX_HTTP_IMAGE_BMP       5
 #define NGX_HTTP_IMAGE_TIFF      6
 
+#define NGX_HTTP_IMAGE_BUFFERED  0x08
 
 #define NGX_HTTP_IMAGE_OFFSET_CENTER    0
 #define NGX_HTTP_IMAGE_OFFSET_LEFT      1
 #define NGX_HTTP_IMAGE_OFFSET_RIGHT     2
 #define NGX_HTTP_IMAGE_OFFSET_TOP       3
 #define NGX_HTTP_IMAGE_OFFSET_BOTTOM    4
-
-#define NGX_HTTP_IMAGE_BUFFERED  0x08
 
 typedef struct {
     ngx_uint_t                   filter;
@@ -278,6 +277,7 @@ static ngx_str_t  ngx_http_image_types[] = {
     ngx_string("image/tiff")
 };
 
+
 static ngx_int_t
 ngx_http_image_header_filter(ngx_http_request_t *r)
 {
@@ -396,6 +396,8 @@ ngx_http_image_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
                                               &ngx_http_image_filter_module,
                                               NGX_HTTP_UNSUPPORTED_MEDIA_TYPE);
         }
+
+        /* override content type */
 
         ct = &ngx_http_image_types[ctx->type - 1];
         if (conf->output != NULL && ngx_http_complex_value(r, conf->output, &ofmt) == NGX_OK) {
@@ -658,7 +660,8 @@ ngx_http_image_process(ngx_http_request_t *r)
         return NULL;
     }
 
-    ctx->max_height = ngx_http_image_filter_get_value(r, conf->hcv, conf->height);
+    ctx->max_height = ngx_http_image_filter_get_value(r, conf->hcv,
+                                                      conf->height);
     if (ctx->max_height == 0) {
         return NULL;
     }
@@ -826,6 +829,13 @@ ngx_http_image_size(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
             return NGX_DECLINED;
         }
 
+        if (ctx->length / 20 < app) {
+            /* force conversion if application data consume more than 5% */
+            ctx->force = 1;
+            ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+                           "app data size: %uz", app);
+        }
+
         break;
 
     case NGX_HTTP_IMAGE_GIF:
@@ -931,6 +941,7 @@ ngx_http_image_size(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
     return NGX_OK;
 }
 
+
 static ngx_buf_t *
 ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
 {
@@ -952,9 +963,11 @@ ngx_http_image_resize(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
         return NULL;
     }
 
-    sx        = gdImageSX(src);
-    sy        = gdImageSY(src);
-    conf      = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
+    sx = gdImageSX(src);
+    sy = gdImageSY(src);
+
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_image_filter_module);
+
     scale_max = (int) conf->scale_max;
     ratio     = 1;
 
@@ -1053,6 +1066,7 @@ transparent:
     dy = sy;
 
     if (conf->filter == NGX_HTTP_IMAGE_RESIZE) {
+
         if ((ngx_uint_t) dx > ctx->max_width) {
             dy = dy * ctx->max_width / dx;
             dy = dy ? dy : 1;
@@ -1320,8 +1334,8 @@ ngx_http_image_source(ngx_http_request_t *r, ngx_http_image_filter_ctx_t *ctx)
     case NGX_HTTP_IMAGE_PNG:
         img = gdImageCreateFromPngPtr(ctx->length, ctx->image);
         failed = "gdImageCreateFromPngPtr() failed";
-            
         break;
+
     case NGX_HTTP_IMAGE_WEBP:
 #if (NGX_HAVE_GD_WEBP)
         img = gdImageCreateFromWebpPtr(ctx->length, ctx->image);

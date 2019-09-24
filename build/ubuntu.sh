@@ -35,9 +35,8 @@ apt-get source nginx=${NGINX_VERSION} -y
 pwd
 ls -la
 
-cd ${NGINX_BUILD_DIR}/src/http/modules/
-mv ngx_http_image_filter_module.c ngx_http_image_filter_module.bak
-mv /tmp/ngx_http_image_filter_module.c ./ngx_http_image_filter_module.c
+cd ${NGINX_BUILD_DIR}
+patch src/http/modules/ngx_http_image_filter_module.c /tmp/image_filter.patch
 
 sed -i "s/--with-http_ssl_module/--with-http_ssl_module --with-http_image_filter_module --add-module=\/usr\/src\/nginx\/ngx_devel_kit --add-module=\/usr\/src\/nginx\/set-misc-nginx-module /g" \
     ${NGINX_BUILD_DIR}/debian/rules
