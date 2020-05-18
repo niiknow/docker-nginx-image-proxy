@@ -22,8 +22,8 @@ rm ngx-misc.tar.gz
 
 curl -s https://nginx.org/keys/nginx_signing.key | apt-key add -
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
-echo "deb http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list
-echo "deb-src http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list
+echo "deb http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list
+echo "deb-src http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list
 
 apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests
 

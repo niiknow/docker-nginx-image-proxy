@@ -1,15 +1,15 @@
-FROM ubuntu:18.04 AS buildstep
+FROM ubuntu:20.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.32 \
-    NGINX_VERSION=1.16.1
+    NGINX_VERSION=1.18.0
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.16.1-1~bionic_amd64.deb \
+    NGINX_VERSION=_1.18.0-1~focal_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -25,8 +25,8 @@ RUN cd /tmp \
     && touch /var/log/cron.log \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
     && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
