@@ -9,7 +9,7 @@ RUN bash /tmp/ubuntu.sh
 FROM ubuntu:20.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.18.0-1~focal_amd64.deb \
+    NGINX_VERSION=_1.18.0-2~focal_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
