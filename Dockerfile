@@ -1,7 +1,7 @@
 FROM ubuntu:20.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_DEVEL_KIT_VERSION=0.3.0 NGINX_SET_MISC_MODULE_VERSION=0.32 \
-    NGINX_VERSION=1.18.0
+    NGINX_DEVEL_KIT_VERSION=0.3.1 NGINX_SET_MISC_MODULE_VERSION=0.32 \
+    NGINX_VERSION=1.20.1
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
@@ -9,7 +9,7 @@ RUN bash /tmp/ubuntu.sh
 FROM ubuntu:20.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.18.0-2~focal_amd64.deb \
+    NGINX_VERSION=_1.20.1-1~focal_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -39,7 +39,9 @@ RUN cd /tmp \
     && apt-get autoremove --purge -y \
     && rm -rf /var/lib/apt/lists/* /var/lib/log/* /tmp/* /var/tmp/*
 
-ADD ./files /
+ADD ./files/etc/ /etc/
+ADD ./files/root/ /root/
+ADD ./files/sbin/ /sbin/
 
 RUN bash /root/bin/placeholder-ssl.sh \
     && mkdir -p /app-start/etc \
