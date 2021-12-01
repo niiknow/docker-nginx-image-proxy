@@ -21,8 +21,6 @@ if [ -n "$SERVER_CONF" ] ; then
 
    mv /app/etc/nginx/sites-enabled/server.conf /app/etc/nginx/sites-enabled/server.bak
    curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
-
-   service nginx reload
 fi
 
 echo "*** Running cron"
