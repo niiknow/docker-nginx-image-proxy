@@ -7,7 +7,7 @@ Nginx module - https://github.com/niiknow/docker-nginx-image-proxy/blob/master/b
 
 Original File - https://github.com/niiknow/docker-nginx-image-proxy/blob/master/build/src/http/modules/ngx_http_image_filter_module.c
 
-Patch creation: `diff -u src/http/modules/ngx_http_image_filter_module.c ngx_http_image_filter_module.c > image_filter.patch`
+Patch creation: `diff -u build/src/http/modules/ngx_http_image_filter_module.c build/ngx_http_image_filter_module.c > build/image_filter.patch`
 
 Patch apply with: `patch src/http/modules/ngx_http_image_filter_module.c image_filter.patch`
 

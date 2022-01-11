@@ -26,5 +26,10 @@ fi
 echo "*** Running cron"
 cron 
 
+# now=$(date +"%T")
+# echo "Current time : $now"
+
+ls -la /root/bin
+
 echo "*** Running nginx"
 exec /usr/sbin/nginx -g "daemon off;"

@@ -1,5 +1,5 @@
---- src/http/modules/ngx_http_image_filter_module.c	2019-09-24 15:35:32.000000000 -0500
-+++ ngx_http_image_filter_module.c	2019-09-24 15:38:46.000000000 -0500
+--- build/src/http/modules/ngx_http_image_filter_module.c	2019-09-24 15:35:32.000000000 -0500
++++ build/ngx_http_image_filter_module.c	2022-01-11 12:32:00.000000000 -0600
 @@ -10,7 +10,7 @@
  #include <ngx_http.h>
  
@@ -324,7 +324,7 @@
      if (!ctx->force
          && ctx->angle == 0
          && (ngx_uint_t) sx <= ctx->max_width
-@@ -872,6 +1003,63 @@
+@@ -872,6 +1003,65 @@
  
  transparent:
  
@@ -376,6 +376,8 @@
 +            }
 +        }
 +
++        // white background 
++        // gdImageFill(dst, 0, 0, gdImageColorAllocate(dst, 255, 255, 255));
 +        my_resize(src, dst);
 +        // set the new original
 +        gdImageDestroy(src);
@@ -388,7 +390,7 @@
      gdImageColorTransparent(src, -1);
  
      dx = sx;
-@@ -901,7 +1089,23 @@
+@@ -901,7 +1091,23 @@
  
          resize = 0;
  
@@ -413,7 +415,18 @@
              if ((ngx_uint_t) dx > ctx->max_width) {
                  dy = dy * ctx->max_width / dx;
                  dy = dy ? dy : 1;
-@@ -989,7 +1193,9 @@
+@@ -931,7 +1137,9 @@
+             gdImageAlphaBlending(dst, 0);
+         }
+ 
+-        gdImageCopyResampled(dst, src, 0, 0, 0, 0, dx, dy, sx, sy);
++        // gdImageFill(dst, 0, 0, gdImageColorAllocate(dst, 255, 255, 255));
++
++        gdImageCopyResampled(dst, src, 0, 0, 0, 0, ceil(dx), ceil(dy), sx, sy);
+ 
+         if (colors) {
+             gdImageTrueColorToPalette(dst, 1, 256);
+@@ -989,7 +1197,9 @@
          }
      }
  
@@ -424,7 +437,7 @@
  
          src = dst;
  
-@@ -1016,8 +1222,24 @@
+@@ -1016,8 +1226,24 @@
                  return NULL;
              }
  
@@ -451,7 +464,7 @@
  
              ngx_log_debug4(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                             "image crop: %d x %d @ %d x %d",
-@@ -1048,6 +1270,7 @@
+@@ -1048,6 +1274,7 @@
      }
  
      gdImageInterlace(dst, (int) conf->interlace);
@@ -459,7 +472,7 @@
  
      out = ngx_http_image_out(r, ctx->type, dst, &size);
  
-@@ -1122,6 +1345,20 @@
+@@ -1122,6 +1349,20 @@
  #endif
          break;
  
@@ -480,7 +493,7 @@
      default:
          failed = "unknown image type";
          break;
-@@ -1171,14 +1408,37 @@
+@@ -1171,14 +1412,37 @@
      u_char                        *out;
      ngx_int_t                      q;
      ngx_http_image_filter_conf_t  *conf;
@@ -520,7 +533,7 @@
          q = ngx_http_image_filter_get_value(r, conf->jqcv, conf->jpeg_quality);
          if (q <= 0) {
              return NULL;
-@@ -1195,13 +1455,11 @@
+@@ -1195,13 +1459,11 @@
  
      case NGX_HTTP_IMAGE_PNG:
          out = gdImagePngPtr(img, size);
@@ -535,7 +548,7 @@
          q = ngx_http_image_filter_get_value(r, conf->wqcv, conf->webp_quality);
          if (q <= 0) {
              return NULL;
-@@ -1214,6 +1472,22 @@
+@@ -1214,6 +1476,22 @@
  #endif
          break;
  
@@ -558,7 +571,7 @@
      default:
          failed = "unknown image type";
          break;
-@@ -1263,7 +1537,27 @@
+@@ -1263,7 +1541,27 @@
  
      n = ngx_atoi(value->data, value->len);
  
@@ -587,7 +600,7 @@
          return (ngx_uint_t) n;
      }
  
-@@ -1299,9 +1593,13 @@
+@@ -1299,9 +1597,13 @@
      conf->jpeg_quality = NGX_CONF_UNSET_UINT;
      conf->webp_quality = NGX_CONF_UNSET_UINT;
      conf->sharpen = NGX_CONF_UNSET_UINT;
@@ -601,7 +614,7 @@
  
      return conf;
  }
-@@ -1364,6 +1662,37 @@
+@@ -1364,6 +1666,37 @@
      ngx_conf_merge_size_value(conf->buffer_size, prev->buffer_size,
                                1 * 1024 * 1024);
  
@@ -639,7 +652,7 @@
      return NGX_CONF_OK;
  }
  
-@@ -1662,6 +1991,66 @@
+@@ -1662,6 +1995,66 @@
  }
  
  
@@ -706,7 +719,7 @@
  static ngx_int_t
  ngx_http_image_filter_init(ngx_conf_t *cf)
  {
-@@ -1673,3 +2062,109 @@
+@@ -1673,3 +2066,113 @@
  
      return NGX_OK;
  }
@@ -785,6 +798,10 @@
 +        offset = (int)((requestedLength - calculatedLength) / 2);
 +    }
 +
++    if (offset < 0) {
++      offset = 0;
++    }
++
 +    return (offset);
 +}
 +
@@ -797,10 +814,10 @@
 +    int destinationY = destination->sy;
 +
 +    if (destinationRatio > originalRatio) {
-+        destinationX = floor(destination->sy * originalRatio);
++        destinationX = ceil(destination->sy * originalRatio);
 +    }
 +    else {
-+        destinationY = floor(destination->sx / originalRatio);
++        destinationY = ceil(destination->sx / originalRatio);
 +    }
 +
 +    gdImageCopyResampled(

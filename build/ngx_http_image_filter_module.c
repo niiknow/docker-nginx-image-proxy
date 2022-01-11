@@ -1051,6 +1051,8 @@ transparent:
             }
         }
 
+        // white background 
+        // gdImageFill(dst, 0, 0, gdImageColorAllocate(dst, 255, 255, 255));
         my_resize(src, dst);
         // set the new original
         gdImageDestroy(src);
@@ -1135,7 +1137,9 @@ transparent:
             gdImageAlphaBlending(dst, 0);
         }
 
-        gdImageCopyResampled(dst, src, 0, 0, 0, 0, dx, dy, sx, sy);
+        // gdImageFill(dst, 0, 0, gdImageColorAllocate(dst, 255, 255, 255));
+
+        gdImageCopyResampled(dst, src, 0, 0, 0, 0, ceil(dx), ceil(dy), sx, sy);
 
         if (colors) {
             gdImageTrueColorToPalette(dst, 1, 256);
@@ -2137,6 +2141,10 @@ static int my_offset(int calculatedLength, int requestedLength) {
         offset = (int)((requestedLength - calculatedLength) / 2);
     }
 
+    if (offset < 0) {
+      offset = 0;
+    }
+
     return (offset);
 }
 
@@ -2149,10 +2157,10 @@ static void my_resize (gdImagePtr original, gdImagePtr destination) {
     int destinationY = destination->sy;
 
     if (destinationRatio > originalRatio) {
-        destinationX = floor(destination->sy * originalRatio);
+        destinationX = ceil(destination->sy * originalRatio);
     }
     else {
-        destinationY = floor(destination->sx / originalRatio);
+        destinationY = ceil(destination->sx / originalRatio);
     }
 
     gdImageCopyResampled(
