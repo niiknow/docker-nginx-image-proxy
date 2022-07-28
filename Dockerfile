@@ -1,15 +1,15 @@
-FROM ubuntu:20.04 AS buildstep
+FROM ubuntu:22.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.1 NGINX_SET_MISC_MODULE_VERSION=0.32 \
-    NGINX_VERSION=1.20.2
+    NGINX_VERSION=1.22.0
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.20.2-1~focal_amd64.deb \
+    NGINX_VERSION=_1.22.0-1~jammy_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -17,16 +17,15 @@ COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
 RUN cd /tmp \
     && echo "\n\n* soft nofile 800000\n* hard nofile 800000\n\n" >> /etc/security/limits.conf \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
-    && apt-get install -y --no-install-recommends --no-install-suggests \
-       curl gpg-agent nano libgd3 gettext-base unzip rsync cron \
-       apt-transport-https software-properties-common \
-       ca-certificates \
+    && apt-get install -y --no-install-recommends --no-install-suggests curl gpg-agent nano \
+       libgd3 gettext-base unzip rsync cron apt-transport-https software-properties-common \
+       ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin \
     && dpkg --configure -a \
     && touch /var/log/cron.log \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/ubuntu/ focal nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
     && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
@@ -44,6 +43,7 @@ ADD ./files/root/ /root/
 ADD ./files/sbin/ /sbin/
 
 RUN bash /root/bin/placeholder-ssl.sh \
+    && bash /etc/cron.daily/geoip2-update \
     && mkdir -p /app-start/etc \
     && mv /etc/nginx /app-start/etc/nginx \
     && rm -rf /etc/nginx \
