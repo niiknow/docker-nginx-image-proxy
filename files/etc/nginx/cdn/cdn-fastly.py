@@ -9,6 +9,7 @@ json = requests.get(url).json()
 
 config = "set_real_ip_from "
 config += "\nset_real_ip_from ".join(json["addresses"])
+
 bottom = "real_ip_header Fastly-Client-IP;"
 config += "\n\n" + bottom
 

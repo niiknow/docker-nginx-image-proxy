@@ -19,8 +19,5 @@ for item in v6:
     directive = f"set_real_ip_from {item};\n"
     config += directive
 
-bottom = "real_ip_header X-Real-IP;"
-config += "\n" + bottom
-
 with open("cdn-bunny.conf", "w")as f:
     f.write(config)
