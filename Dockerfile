@@ -19,7 +19,7 @@ RUN cd /tmp \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests curl gpg-agent nano \
        libgd3 gettext-base unzip rsync cron apt-transport-https software-properties-common \
-       ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin \
+       ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin python3-pip \
     && dpkg --configure -a \
     && touch /var/log/cron.log \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
@@ -34,6 +34,7 @@ RUN cd /tmp \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && service nginx stop && update-rc.d -f nginx disable \
+    && pip3 install requests \
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \
     && rm -rf /var/lib/apt/lists/* /var/lib/log/* /tmp/* /var/tmp/*
