@@ -48,6 +48,8 @@ RUN bash /root/bin/placeholder-ssl.sh \
     && mkdir -p /app-start/etc \
     && mv /etc/nginx /app-start/etc/nginx \
     && rm -rf /etc/nginx \
+    && cd /app-start/etc/nginx \
+    && ./geoip2-download.sh \
     && ln -s /app/etc/nginx /etc/nginx \
     && mkdir -p /app-start/var/log \
     && mv /var/log/nginx /app-start/var/log/nginx \
