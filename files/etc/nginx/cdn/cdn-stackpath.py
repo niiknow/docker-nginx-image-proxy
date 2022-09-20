@@ -2,8 +2,6 @@
 """
 Util to grab StackPath Inbound addresses 
 """
-#!/usr/local/bin/python3
-# coding: utf-8
 
 import requests
 

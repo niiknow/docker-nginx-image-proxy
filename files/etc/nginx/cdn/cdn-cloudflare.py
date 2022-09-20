@@ -1,5 +1,7 @@
 #!/usr/local/bin/python3
-# coding: utf-8
+"""
+Util to grab Cloudflare Inbound addresses 
+"""
 
 import requests
 

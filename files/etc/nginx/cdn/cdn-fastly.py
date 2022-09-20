@@ -2,6 +2,7 @@
 """
 Util to grab Fastly Inbound addresses 
 """
+
 import requests
 
 url = 'https://api.fastly.com/public-ip-list'

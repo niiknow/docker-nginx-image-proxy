@@ -1,6 +1,4 @@
 #!/bin/bash
 # download geolite2 file
-mkdir -p /usr/share/GeoIP/
-./root/bin/my-download.sh /usr/share/GeoIP/GeoLite2-ASN.mmdb https://git.io/GeoLite2-ASN.mmdb
-./root/bin/my-download.sh /usr/share/GeoIP/GeoLite2-City.mmdb https://git.io/GeoLite2-City.mmdb
-./root/bin/my-download.sh /usr/share/GeoIP/GeoLite2-Country.mmdb https://git.io/GeoLite2-Country.mmdb
+cd /etc/nginx
+./geoip2-download.sh

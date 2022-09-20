@@ -1,9 +1,7 @@
 #!/usr/local/bin/python3
 """
-Util to grab ArvanCloud Inbound addresses 
+Util to grab BunnyCDN Inbound addresses 
 """
-#!/usr/local/bin/python3
-# coding: utf-8
 
 import requests
 
