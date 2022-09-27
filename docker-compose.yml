@@ -1,10 +1,23 @@
-version: '2'
+# docker-compose example
+version: "3.3"
 
 services:
-    app:
-        image: niiknow/nginx-image-proxy
-        restart: always
-        container_name: nginx-image-proxy
-        ports:
-            - '80:80'
-            - '443:443'
+
+  redis:
+    image: niiknow/nginx-image-proxy:3.1.2
+    container_name: nginx-image-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./data/etc/nginx:/etc/nginx:rw"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 200000
+        hard: 400000
+    sysctls:
+      net.core.somaxconn: '2048'
+    labels:
+      - "Nginx Image Proxy"
+    restart: unless-stopped
