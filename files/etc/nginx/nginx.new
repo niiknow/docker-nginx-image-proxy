@@ -34,11 +34,11 @@ http {
     server_names_hash_bucket_size   512;
 
     # Log format
-    log_format  main                '$remote_addr - $remote_user [$time_local] "$request" '
+    log_format  main                '$realip_remote_addr - $remote_user [$time_local] "$request" '
                                     '$status $body_bytes_sent "$http_referer" '
                                     '"$http_user_agent" "$http_x_forwarded_for"';
     log_format  better              '-= ngx: $status $request_method $scheme://$host$request_uri $request_time '
-                                    '$remote_addr $body_bytes_sent "$http_referer" '
+                                    '$realip_remote_addr $body_bytes_sent "$http_referer" '
                                     '"$http_user_agent" "$http_x_forwarded_for"';
 
     access_log                      /var/log/nginx/access.log better;
