@@ -1,5 +1,4 @@
 proxy_hide_header           "X-Cache";
-proxy_hide_header           "Content-Type";
 proxy_hide_header           "Last-Modified";
 proxy_hide_header           "ETag";
 proxy_hide_header           "Content-Disposition";
