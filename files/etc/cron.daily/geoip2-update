@@ -1,4 +1,6 @@
 #!/bin/bash
 # download geolite2 file
-cd /etc/nginx
-./geoip2-download.sh
+bash /etc/nginx/geoip2-download.sh
+
+# reload nginx
+nginx -s reload
