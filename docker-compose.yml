@@ -4,13 +4,13 @@ version: "3.3"
 services:
 
   redis:
-    image: niiknow/nginx-image-proxy:3.1.2
+    image: niiknow/nginx-image-proxy
     container_name: nginx-image-proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - "./data/etc/nginx:/etc/nginx:rw"
+      - "./data:/app:rw"
     ulimits:
       nproc: 65535
       nofile:
