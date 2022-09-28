@@ -44,7 +44,7 @@ ADD ./files/root/ /root/
 ADD ./files/sbin/ /sbin/
 
 RUN bash /root/bin/dummycert.sh \
-    && bash /etc/cron.daily/geoip2-update \
+    && bash /etc/nginx/geoip2-download.sh \
     && mkdir -p /app-start/etc \
     && mv /etc/nginx /app-start/etc/nginx \
     && rm -rf /etc/nginx \
