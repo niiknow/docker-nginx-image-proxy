@@ -2,8 +2,8 @@
 set -e
 
 function die {
-   echo >&2 "$@"
-   exit 1
+    echo >&2 "$@"
+    exit 1
 }
 
 #######################################
@@ -12,15 +12,19 @@ function die {
 #   String: value to log
 #######################################
 function log {
-   if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
-   else echo; fi
+    if [[ "$@" ]]; then echo "[`date +'%Y-%m-%d %T'`] $@";
+    else echo; fi
 }
 
 if [ -n "$SERVER_CONF" ] ; then
-   log "Getting new server.conf"
 
-   mv /app/etc/nginx/sites-enabled/server.conf /app/etc/nginx/sites-enabled/server.bak
-   curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
+	# backup old config if exists
+    if [ -f /app/etc/nginx/sites-enabled/server.conf ]; then
+        mv /app/etc/nginx/sites-enabled/server.conf /app/etc/nginx/sites-enabled/server.bak
+    fi
+   
+    log "Getting new server.conf"
+    curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
 fi
 
 echo "*** Running cron"

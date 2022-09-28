@@ -12,7 +12,8 @@ if [ ! -f /etc/nginx/nginx.conf ]; then
 fi
 
 mkdir -p /tmp/nginx/cache \
-         /tmp/nginx/body
+         /tmp/nginx/body \
+         /app/letsencrypt-acme-challenge
 chown -R www-data:nginx /tmp/nginx
 
 # if there is nginx.new, then make it current and backup existing
