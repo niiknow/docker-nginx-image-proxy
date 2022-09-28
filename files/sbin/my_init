@@ -26,7 +26,7 @@ if [ -f /etc/nginx/nginx.new ]; then
 fi
 
 # Dynamically generate resolvers file, if resolver is IPv6, enclose in `[]`
-echo resolver "$(awk 'BEGIN{ORS=" "} $1=="nameserver" { sub(/%.*$/,"",$2); print ($2 ~ ":")? "["$2"]": $2}' /etc/resolv.conf) valid=10s;" > /etc/nginx/include/resolvers.conf
+echo resolver "$(awk 'BEGIN{ORS=" "} $1=="nameserver" { sub(/%.*$/,"",$2); print ($2 ~ ":")? "["$2"]": $2}' /etc/resolv.conf) ipv6=off valid=10s;" > /etc/nginx/include/resolvers.conf
 
 echo "*** Running /root/bin/my-startup.sh..."
 bash /root/bin/my-startup.sh

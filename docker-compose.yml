@@ -21,3 +21,7 @@ services:
     labels:
       - "Nginx Image Proxy"
     restart: unless-stopped
+    logging:
+    options:
+      max-size: "10m"
+      max-file: "10"

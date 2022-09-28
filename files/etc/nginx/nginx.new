@@ -49,13 +49,13 @@ http {
 
     log_format main     '[$time_iso8601] $remote_addr - $realip_remote_addr - $remote_user - $server_name '
                         '$host "$request" $status $body_bytes_sent "$http_referer" '
-                         '"$http_user_agent" "$http_x_forwarded_for" "upstream - $upstream_addr"';
+                        '"$http_user_agent" "$http_x_forwarded_for" "upstream - $upstream_addr"';
 
 
     access_log                    /var/log/nginx/access.log main;
 
     # Dynamically generated resolvers file
-    include                       /etc/nginx/conf.d/include/resolvers.conf;
+    include                       /etc/nginx/include/resolvers.conf;
 
     # Default upstream scheme
     map $host $forward_scheme {
