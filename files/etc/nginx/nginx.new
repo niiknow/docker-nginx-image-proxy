@@ -8,85 +8,62 @@ pid                     /var/run/nginx.pid;
 
 # Worker config
 events {
-    worker_connections              8192;
-    use                             epoll;
-    multi_accept                    on;
+    worker_connections 8192;
+    use                epoll;
+    multi_accept       on;
 }
 
+# Includes files with directives to load dynamic modules.
+include /etc/nginx/modules/*.conf;
 
 http {
-    # Main settings
-    sendfile                        on;
-    tcp_nopush                      on;
-    tcp_nodelay                     on;
-    client_header_timeout           1m;
-    client_body_timeout             1m;
-    client_header_buffer_size       2k;
-    client_body_buffer_size         256k;
-    client_max_body_size            256m;
-    large_client_header_buffers     4   8k;
-    send_timeout                    30;
-    keepalive_timeout               60 60;
-    reset_timedout_connection       on;
-    server_tokens                   off;
-    server_name_in_redirect         off;
-    server_names_hash_max_size      512;
-    server_names_hash_bucket_size   512;
+    include                       /etc/nginx/mime.types;
+    default_type                  application/octet-stream;
+    sendfile                      on;
+    server_tokens                 off;
+    tcp_nopush                    on;
+    tcp_nodelay                   on;
+    client_body_temp_path         /tmp/nginx/body 1 2;
+    keepalive_timeout             90s;
+    proxy_connect_timeout         90s;
+    proxy_send_timeout            90s;
+    proxy_read_timeout            90s;
+    proxy_ignore_client_abort     off;
+    gzip                          on;
+    client_max_body_size          2000m;
+    server_names_hash_bucket_size 1024;
+    proxy_http_version            1.1;
+    proxy_set_header              X-Forwarded-Scheme $scheme;
+    proxy_set_header              X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header              Accept-Encoding "";
+    proxy_cache                   off;
+    proxy_cache_path              /var/cache/nginx/public  levels=1:2 keys_zone=public-cache:30m max_size=192m;
+    proxy_cache_path              /var/cache/nginx/private levels=1:2 keys_zone=private-cache:5m max_size=1024m;
 
-    # Log format
-    log_format  main                '$time_iso8601 $remote_addr - $realip_remote_addr - $remote_user - $server_name '
-                                    '$host "$request" $status $body_bytes_sent "$http_referer" '
-                                    '"$http_user_agent" "$http_x_forwarded_for" "upstream - $upstream_addr"';
+  # Log formats
+  #
+  # # predefined combined format as example
+  # log_format combined '$remote_addr - $remote_user [$time_local] '
+  #                     '"$request" $status $body_bytes_sent '
+  #                     '"$http_referer" "$http_user_agent"';
 
-    access_log                      /var/log/nginx/access.log main;
-
-    # Mime settings
-    include                         /etc/nginx/mime.types;
-    default_type                    application/octet-stream;
-
-    # Compression settings - aggressively cache text file types
-    gzip                            on;
-    gzip_comp_level                 9;
-    gzip_min_length                 512;
-    gzip_buffers                    8 64k;
-    gzip_types                      text/plain text/css text/javascript text/js text/xml application/json application/javascript application/x-javascript application/xml application/xml+rss application/x-font-ttf image/svg+xml font/opentype;
-    gzip_proxied                    any;
-    gzip_disable                    "MSIE [1-6]\.";
+    log_format main     '[$time_iso8601] $remote_addr - $realip_remote_addr - $remote_user - $server_name '
+                        '$host "$request" $status $body_bytes_sent "$http_referer" '
+                         '"$http_user_agent" "$http_x_forwarded_for" "upstream - $upstream_addr"';
 
 
-    # SSL PCI Compliance
-    ssl_session_cache               shared:SSL:10m;
-    ssl_protocols                   TLSv1.1 TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers       on;
-    ssl_ciphers                     "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK";
+    access_log                    /var/log/nginx/access.log main;
 
+    # Dynamically generated resolvers file
+    include                       /etc/nginx/conf.d/include/resolvers.conf;
 
-    # Error pages
-    error_page          403          /error/403.html;
-    error_page          404          /error/404.html;
-    error_page          502 503 504  /error/50x.html;
-
-
-    # Cache bypass
-    map $http_cookie $no_cache {
-        default 0;
-        ~SESS 1;
-        ~wordpress_logged_in 1;
+    # Default upstream scheme
+    map $host $forward_scheme {
+        default http;
     }
 
-    # File cache settings
-    open_file_cache                  max=20000 inactive=20s;
-    open_file_cache_valid            60s;
-    open_file_cache_min_uses         2;
-    open_file_cache_errors           off;
-
-    # Other settings
-    log_subrequest                   on;
-    rewrite_log                      on;
-
-    include                          /etc/nginx/cdn-ips.conf;
+    include                       /etc/nginx/cdn-ips.conf;
     
     # Wildcard include
-    include                          /etc/nginx/conf.d/*.conf;
-    include                          /etc/nginx/sites-enabled/*.conf;
+    include                       /etc/nginx/sites-enabled/*.conf;
 }

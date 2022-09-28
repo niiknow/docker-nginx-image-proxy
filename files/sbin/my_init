@@ -5,18 +5,27 @@ export TERM=xterm
 # save environment variables for use later in cron, if required
 env > /root/env.txt
 
-if [ ! -f /etc/nginx/cdn.conf ]; then
+# no conf, so copy content
+if [ ! -f /etc/nginx/nginx.conf ]; then
 	echo "[i] running for the 1st time"
     rsync --update -raz /app-start/* /app
 fi
 
-mkdir -p /tmp/nginx/cache
+mkdir -p /tmp/nginx/cache \
+         /tmp/nginx/body
 chown -R www-data:nginx /tmp/nginx
 
+# if there is nginx.new, then make it current and backup existing
 if [ -f /etc/nginx/nginx.new ]; then
-   mv /etc/nginx/nginx.conf /etc/nginx/nginx.old
-   mv /etc/nginx/nginx.new /etc/nginx/nginx.conf
+    # backup old conf if exists
+    if [ -f /etc/nginx/nginx.conf ]; then
+        mv /etc/nginx/nginx.conf /etc/nginx/nginx.old
+    fi
+    mv /etc/nginx/nginx.new /etc/nginx/nginx.conf
 fi
+
+# Dynamically generate resolvers file, if resolver is IPv6, enclose in `[]`
+echo resolver "$(awk 'BEGIN{ORS=" "} $1=="nameserver" { sub(/%.*$/,"",$2); print ($2 ~ ":")? "["$2"]": $2}' /etc/resolv.conf) valid=10s;" > /etc/nginx/include/resolvers.conf
 
 echo "*** Running /root/bin/my-startup.sh..."
 bash /root/bin/my-startup.sh

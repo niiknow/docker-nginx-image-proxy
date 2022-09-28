@@ -43,7 +43,7 @@ ADD ./files/etc/ /etc/
 ADD ./files/root/ /root/
 ADD ./files/sbin/ /sbin/
 
-RUN bash /root/bin/placeholder-ssl.sh \
+RUN bash /root/bin/dummycert.sh \
     && bash /etc/cron.daily/geoip2-update \
     && mkdir -p /app-start/etc \
     && mv /etc/nginx /app-start/etc/nginx \
