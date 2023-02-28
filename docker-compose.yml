@@ -3,7 +3,7 @@ version: "3.3"
 
 services:
 
-  redis:
+  nginx:
     image: niiknow/nginx-image-proxy
     container_name: nginx-image-proxy
     ports:
