@@ -3,7 +3,7 @@ version: "3.3"
 
 services:
 
-  redis:
+  nginx:
     image: niiknow/nginx-image-proxy
     container_name: nginx-image-proxy
     ports:
@@ -22,6 +22,6 @@ services:
       - "Nginx Image Proxy"
     restart: unless-stopped
     logging:
-    options:
-      max-size: "10m"
-      max-file: "10"
+      options:
+        max-size: "10m"
+        max-file: "10"
