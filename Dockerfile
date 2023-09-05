@@ -1,7 +1,7 @@
 FROM ubuntu:22.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_DEVEL_KIT_VERSION=0.3.1 NGINX_SET_MISC_MODULE_VERSION=0.32 \
-    NGINX_VERSION=1.22.0
+    NGINX_DEVEL_KIT_VERSION=0.3.2 NGINX_SET_MISC_MODULE_VERSION=0.33 \
+    NGINX_VERSION=1.24.0
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
@@ -9,7 +9,7 @@ RUN bash /tmp/ubuntu.sh
 FROM ubuntu:22.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.22.0-1~jammy_amd64.deb \
+    NGINX_VERSION=_1.24.0-1~jammy_amd64.deb \
     NGINX_DEBUG=-dbg${NGINX_VERSION}
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
@@ -19,10 +19,10 @@ RUN cd /tmp \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends --no-install-suggests \
     && apt-get install -y --no-install-recommends --no-install-suggests curl gpg-agent nano \
        libgd3 gettext-base unzip rsync cron apt-transport-https software-properties-common \
-       ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin python3-pip \
+       ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin python3-pip git \
     && dpkg --configure -a \
     && touch /var/log/cron.log \
-    && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
+    && curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
     && echo "deb http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \

@@ -3,11 +3,12 @@
 export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
 cd /tmp
 
-add-apt-repository ppa:maxmind/ppa
 apt-get update
 apt-get install -y --no-install-recommends --no-install-suggests curl apt-transport-https \
         apt-utils software-properties-common build-essential ca-certificates libssl-dev \
-        zlib1g zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev gpg-agent
+        zlib1g zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev gpg-agent git
+        
+add-apt-repository ppa:maxmind/ppa
 apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
 
 dpkg --configure -a
@@ -22,7 +23,7 @@ mkdir -p /usr/src/nginx/set-misc-nginx-module
 tar -xof ngx-misc.tar.gz -C /usr/src/nginx/set-misc-nginx-module --strip-components=1
 rm ngx-misc.tar.gz
 
-curl -s https://nginx.org/keys/nginx_signing.key | apt-key add -
+curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
 echo "deb http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list
 echo "deb-src http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list
