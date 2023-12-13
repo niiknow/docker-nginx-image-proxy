@@ -219,7 +219,7 @@ server {
         internal;
 
         proxy_pass                  $clean_uri;
-        include                     /etc/nginx/sites-enabled/proxy-hide-headers.common;
+        include                     /etc/nginx/include/proxy-hide-headers.common;
 
         add_header                  X-ImageProxy-Cache $upstream_cache_status;
         add_header                  X-ImageProxy-Debug $debugkey;
@@ -243,7 +243,7 @@ server {
         internal;
 
         proxy_pass                  $clean_uri;
-        include                     /etc/nginx/sites-enabled/proxy-hide-headers.common;
+        include                     /etc/nginx/include/proxy-hide-headers.common;
 
         add_header                  X-ImageProxy-Cache $upstream_cache_status;
         add_header                  X-ImageProxy-Debug $debugkey;

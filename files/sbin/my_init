@@ -12,8 +12,7 @@ if [ ! -f /etc/nginx/nginx.conf ]; then
 fi
 
 mkdir -p /tmp/nginx/cache \
-         /tmp/nginx/body \
-         /app/letsencrypt-acme-challenge
+         /tmp/nginx/body
 chown -R www-data:nginx /tmp/nginx
 
 # if there is nginx.new, then make it current and backup existing
@@ -27,6 +26,9 @@ fi
 
 # Dynamically generate resolvers file, if resolver is IPv6, enclose in `[]`
 echo resolver "$(awk 'BEGIN{ORS=" "} $1=="nameserver" { sub(/%.*$/,"",$2); print ($2 ~ ":")? "["$2"]": $2}' /etc/resolv.conf) ipv6=off valid=10s;" > /etc/nginx/include/resolvers.conf
+
+echo "*** downloading geolite2"
+bash /etc/nginx/geolite2/geoip2-download.sh
 
 echo "*** Running /root/bin/my-startup.sh..."
 bash /root/bin/my-startup.sh

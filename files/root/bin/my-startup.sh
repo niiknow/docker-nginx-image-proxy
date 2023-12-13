@@ -27,9 +27,6 @@ if [ -n "$SERVER_CONF" ] ; then
     curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
 fi
 
-echo "*** Running cron"
-cron 
-
 # now=$(date +"%T")
 # echo "Current time : $now"
 
