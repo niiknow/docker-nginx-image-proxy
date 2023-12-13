@@ -47,7 +47,7 @@ RUN bash /root/bin/dummycert.sh \
     && mkdir -p /app-start/etc \
     && mv /etc/nginx /app-start/etc/nginx \
     && rm -rf /etc/nginx \
-    && cd /app-start/etc/nginx \
+    && cd /app-start/etc/nginx/geolite2 \
     && bash geoip2-download.sh \
     && ln -s /app/etc/nginx /etc/nginx \
     && mkdir -p /app-start/var/log \
