@@ -10,7 +10,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - "./data:/app:rw"
+#      - "./data:/app:rw"
+      - "./sites-enabled:/app/etc/nginx/sites-enabled:rw"
     ulimits:
       nproc: 65535
       nofile:
