@@ -37,7 +37,7 @@ image_filter_water_pos [ top-left | top-right | center | bottom-left | bottom-ri
 # 
 # For example (during testing) a 200KB JPEG file (1024x768) will take up 4MB of memory 
 # when loaded; but when resampled to 2x the the size, the memory use jumps to 20.1MB
-# Mathematically make sense: 4MB * 2x * 2y = 4 * 2 * 2 = 16MB + 4MB (original image) = 20MB
+# Mathematically make sense: 4MB * 2(Dimensions xy) = 4MB * 2 * 2 = 16MB (new) + 4MB (original) = 20MB
 image_filter_scale_max 3;
 
 ```
