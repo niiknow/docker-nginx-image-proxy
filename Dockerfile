@@ -1,16 +1,15 @@
-FROM ubuntu:22.04 AS buildstep
+FROM ubuntu:24.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_DEVEL_KIT_VERSION=0.3.2 NGINX_SET_MISC_MODULE_VERSION=0.33 \
-    NGINX_VERSION=1.24.0
+    NGINX_DEVEL_KIT_VERSION=0.3.3 NGINX_SET_MISC_MODULE_VERSION=0.33 \
+    NGINX_VERSION=1.26.2
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.24.0-1~jammy_amd64.deb \
-    NGINX_DEBUG=-dbg${NGINX_VERSION}
+    NGINX_VERSION=_1.26.2-1~noble_arm64.deb
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
 
@@ -24,8 +23,8 @@ RUN cd /tmp \
     && touch /var/log/cron.log \
     && curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/ubuntu/ jammy nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
     && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
@@ -34,7 +33,7 @@ RUN cd /tmp \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && service nginx stop && update-rc.d -f nginx disable \
-    && pip3 install requests boto3 \
+    && pip3 install requests boto3 --break-system-packages \
     && apt-get clean -y && apt-get autoclean -y \
     && apt-get autoremove --purge -y \
     && rm -rf /var/lib/apt/lists/* /var/lib/log/* /tmp/* /var/tmp/*
