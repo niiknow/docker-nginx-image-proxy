@@ -13,7 +13,7 @@ apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
 
 dpkg --configure -a
 
-curl -sL "https://github.com/simplresty/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
+curl -sL "https://github.com/vision5/ngx_devel_kit/archive/v$NGINX_DEVEL_KIT_VERSION.tar.gz" -o dev-kit.tar.gz
 mkdir -p /usr/src/nginx/ngx_devel_kit
 tar -xof dev-kit.tar.gz -C /usr/src/nginx/ngx_devel_kit --strip-components=1
 rm dev-kit.tar.gz
