@@ -18,13 +18,20 @@ function log {
 
 if [ -n "$SERVER_CONF" ] ; then
 
+    log "Getting new server.conf from $SERVER_CONF"
+
+    # download to a temp file first so a failed download never replaces a working config
+    if ! curl -fsSL --retry 3 "$SERVER_CONF" --output /tmp/server.conf.new; then
+        rm -f /tmp/server.conf.new
+        die "ERROR: unable to download SERVER_CONF from '$SERVER_CONF' (not found or unreachable), aborting startup"
+    fi
+
 	# backup old config if exists
     if [ -f /app/etc/nginx/sites-enabled/server.conf ]; then
         mv /app/etc/nginx/sites-enabled/server.conf /app/etc/nginx/sites-enabled/server.bak
     fi
-   
-    log "Getting new server.conf"
-    curl -SL $SERVER_CONF --output /app/etc/nginx/sites-enabled/server.conf
+
+    mv /tmp/server.conf.new /app/etc/nginx/sites-enabled/server.conf
 fi
 
 # now=$(date +"%T")

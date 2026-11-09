@@ -1,15 +1,30 @@
 proxy_cache_path /var/cache/nginx/imgproxy levels=1:2 keys_zone=imgproxy:10m max_size=1g inactive=45m;
 
+# gravity -> image_filter_crop_offset {left,center,right} {top,center,bottom}
+# default (no gravity) is NorthWest
+map $gravity $crop_offx {
+    default                     left;
+    "~East$"                    right;
+    "~^(North|South|Center)$"   center;
+}
+
+map $gravity $crop_offy {
+    default                     top;
+    "~^South"                   bottom;
+    "~^(West|East|Center)$"     center;
+}
+
 server {
     listen 80;
     listen [::]:80 ipv6only=on;
 
-    listen 443 ssl http2;
-    listen [::]:443 ipv6only=on ssl http2;
+    listen 443 ssl;
+    listen [::]:443 ipv6only=on ssl;
+    http2  on;
 
     include             /etc/nginx/include/ssl-ciphers.conf;
-    ssl_certificate     /etc/nginx/ssl/dummycert.crt;
-    ssl_certificate_key /etc/nginx/ssl/dummykey.key;
+    ssl_certificate     /etc/nginx/ssl/dummycert.pem;
+    ssl_certificate_key /etc/nginx/ssl/dummykey.pem;
 
     set $width     -;
     set $height    -;
@@ -20,15 +35,16 @@ server {
     set $myhost    "";
     set $ofmt      "";
     set $debugcode "";
-
-  # image_filter_crop_offset {left,center,right} {top,center,bottom};
-    set $crop_offx left;
-    set $crop_offy top;
+    set $gravity   ""; # mapped to $crop_offx/$crop_offy above
 
     server_name                      default;
     root                             /usr/share/nginx/html;
     index                            index.html index.htm;
     error_page                       301 302 307 = @handle_redirect;
+
+    # return a transparent 1x1 gif on errors; the original status code is kept
+    # so <img onerror> handlers still fire.  Comment out to return plain errors.
+    error_page                       403 404 415 500 502 503 504 @empty_gif;
 
     # begin image_filter stuff
     image_filter_buffer              20M;
@@ -95,7 +111,9 @@ server {
             set $image_uri "$protocol://$myhost$image_path";
         }
 
-        # change this to whitelist your host       
+        # SECURITY: without this allow-list the server will fetch images from ANY
+        # host, including internal/private addresses (127.0.0.1, 10.x, 169.254.169.254
+        # cloud metadata, ...).  Enable it and list your origin hosts in production.
         # if ($myhost !~ ".*(host1.com|host2.org|host3.edu|host4.net|host5.info)$") {
         #     set $image_uri "";
         #     set $debugkey "$myhost=denied";
@@ -103,13 +121,14 @@ server {
         #     break;
         # }
 
+# option keys must not be preceded by a letter, so e.g. "water_1" is not read as "r_1"
 # width
-        if ($myargs ~ "^(\d+)\D*") {
+        if ($myargs ~ "^(\d+)") {
             set $width $1;
         }
 
-        if ($myargs ~ "w([_]*)(\d+)") {
-            set $width $2;
+        if ($myargs ~ "(?<![A-Za-z])w_*(\d+)") {
+            set $width $1;
         }
 
         if ($arg_w) {
@@ -117,12 +136,12 @@ server {
         }
 
 # height
-        if ($myargs ~ "x(\d+)") {
+        if ($myargs ~ "(?<![A-Za-z])x(\d+)") {
             set $height $1;
         }
 
-        if ($myargs ~ "h([_]*)(\d+)") {
-            set $height $2;
+        if ($myargs ~ "(?<![A-Za-z])h_*(\d+)") {
+            set $height $1;
         }
 
         if ($arg_h) {
@@ -130,8 +149,8 @@ server {
         }
 
 # quality
-        if ($myargs ~ "q([_]*)(\d+)") {
-            set $quality $2;
+        if ($myargs ~ "(?<![A-Za-z])q_*(\d+)") {
+            set $quality $1;
         }
 
         if ($arg_q) {
@@ -139,44 +158,28 @@ server {
         }
 
 # rotate
-        if ($myargs ~ "r([_]*)(\d+)") {
-            set $rotate $2;
+        if ($myargs ~ "(?<![A-Za-z])r_*(\d+)") {
+            set $rotate $1;
         }
 
         if ($arg_r) {
             set $rotate $arg_r;
         }
 
-# gravity
-        if ($myargs ~ "Center") {
-            set $crop_offx center;
-            set $crop_offy center;
+# gravity (implies crop): g_Center, gCenter or ?g=Center
+        if ($myargs ~ "(?<![A-Za-z])g_*(NorthWest|NorthEast|SouthWest|SouthEast|North|South|West|East|Center)") {
+            set $gravity $1;
+            set $cmd "crop";
         }
 
-        if ($arg_g ~ "Center") {
-            set $crop_offx center;
-            set $crop_offy center;
-        }
-
-        if ($myargs ~ "South") {
-            set $crop_offy bottom;
-        }
-
-        if ($arg_g ~ "South") {
-            set $crop_offy bottom;
-        }
-
-        if ($myargs ~ "East") {
-            set $crop_offx right;
-        }
-
-        if ($arg_g ~ "East") {
-            set $crop_offx right;
+        if ($arg_g) {
+            set $gravity $arg_g;
+            set $cmd "crop";
         }
 
 # sharpen
-        if ($myargs ~ "e([_]*)(\d+)") {
-            set $sharpen $2;
+        if ($myargs ~ "(?<![A-Za-z])e_*(\d+)") {
+            set $sharpen $1;
         }
 
         if ($arg_e) {
@@ -184,8 +187,8 @@ server {
         }
 
 # output format
-        if ($myargs ~ "ofmt([_]*)(\w+)") {
-            set $ofmt $2;
+        if ($myargs ~ "(?<![A-Za-z])ofmt_*([A-Za-z]+)") {
+            set $ofmt $1;
         }
 
         if ($arg_ofmt) {
@@ -193,7 +196,7 @@ server {
         }
 
 # crop
-        if ($myargs ~ "c([_]*)1") {
+        if ($myargs ~ "(?<![A-Za-z])c_*1") {
             set $cmd "crop";
         }
 
@@ -201,17 +204,34 @@ server {
             set $cmd "crop";
         }
 
-        if ($myargs ~ "g_+") {
-            set $cmd "crop";
+# resolved options as path-style args, so @handle_redirect keeps options that
+# came from the query string (?w=100) when following an origin redirect
+        set $redir_args "w_$width,h_$height,q_$quality,r_$rotate,e_$sharpen,ofmt_$ofmt,g_$gravity";
+        if ($cmd = "crop") {
+            set $redir_args "$redir_args,c_1";
         }
 
-        if ($arg_g) {
-            set $cmd "crop";
-        }
-        
-        set $debugkey "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen&cmd=$cmd&ofmt=$ofmt";
+# strip proxy option args (w,h,q,r,g,e,c,ofmt,rz) so they are not sent to origin;
+# each pass removes one, nginx has no loops so the pass is repeated
+        set $origin_args "&$args&";
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
 
-        set_unescape_uri            $clean_uri "$image_uri$is_args$args";
+        set $origin_qs "";
+        if ($origin_args ~ "^&*([^&].*?)&*$") {
+            set $origin_qs "?$1";
+        }
+
+        set $debugkey "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen&g=$gravity&cmd=$cmd&ofmt=$ofmt";
+
+        set_unescape_uri            $clean_uri "$image_uri$origin_qs";
         rewrite ^ /cmd/$cmd last;
     }
 
@@ -225,11 +245,11 @@ server {
         add_header                  X-ImageProxy-Debug $debugkey;
         expires                     24h;
         add_header                  Cache-Control "public";
-        
+
       # image_filter_water_image    /app/logo.png;
       # image_filter_water_pos      center;
         image_filter_scale_max      3;
-        
+
         image_filter_sharpen        $sharpen;
         image_filter_jpeg_quality   $quality;
         image_filter_webp_quality   $quality;
@@ -249,7 +269,7 @@ server {
         add_header                  X-ImageProxy-Debug $debugkey;
         expires                     24h;
         add_header                  Cache-Control "public";
-        
+
       # image_filter_water_image  /app/logo.png;
       # image_filter_water_pos    center;
         image_filter_scale_max      3;
@@ -266,14 +286,19 @@ server {
 
     location @handle_redirect {
         set                         $image_uri "$upstream_http_location";
- 
+
         # if relative url, append base path
         if ($image_uri !~ "(http:|https:)") {
             set $image_uri "$protocol://$myhost$image_uri";
         }
 
-        set_unescape_uri            $clean_uri "http://127.0.0.1/rx/$myargs/$image_uri";
+        set_unescape_uri            $clean_uri "http://127.0.0.1/rx/$redir_args/$image_uri";
         proxy_cache_bypass          1;
         proxy_pass                  $clean_uri;
+    }
+
+    location @empty_gif {
+        add_header                  X-ImageProxy-Debug $debugkey always;
+        empty_gif;
     }
 }

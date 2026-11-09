@@ -6,7 +6,6 @@ resolver               8.8.8.8 8.8.4.4 ipv6=off;
 add_header             Access-Control-Allow-Origin *;
 proxy_set_header       X-Forwarded-For $realip;
 proxy_ssl_verify       off;
-proxy_ssl_server_name  on;
 
 # Disable .htaccess and other hidden files
 location ~ /\.(?!well-known).* {
@@ -20,10 +19,4 @@ location /robots.txt {
     access_log off;
     default_type text/plain;
     return 200 "User-agent: *\nDisallow: /\n";
-}
-
-location /healthcheck {
-    access_log off;
-    default_type text/plain;
-    return 200 "OK";
 }

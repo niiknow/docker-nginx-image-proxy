@@ -14,7 +14,7 @@ Patch apply with: `patch src/http/modules/ngx_http_image_filter_module.c image_f
 Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
 - [x] /healthcheck endpoint
-- [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504
+- [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504 - the original status code is kept so `<img onerror>` handlers still fire; remove the `error_page ... @empty_gif` line in your server.conf to return plain errors instead
 - [x] convert/force output to another format, support formats: bmp, jpg, png, gif, webp, and tiff 
 - [x] use custom ssl and saved config when you mount '/app' volume.  nginx logs has also been redirect so you can backup, such as aws s3 sync.  Just delete the default redirect to stdout/access.log and stderr/error.log files.
 - [x] support international characters in URL
@@ -94,6 +94,21 @@ Options are a subset of Cloudinary. It's also very flexible and customizable.
 * Or in a QueryString: ?g=Center&w=100&h=100
 
 And if that doesn't work, you can always use your custom nginx config by passing the config url into docker environment variable: SERVER_CONF
+
+If the `SERVER_CONF` url cannot be downloaded (404, unreachable, ...), the container stops at startup with an error message instead of running with a broken config.
+
+# Security: restrict origin hosts
+Out of the box, the example config (`sites-enabled/server-conf.example`) will fetch and resize images from **any** host given in the URL.  That makes it an open proxy, and it can also reach hosts that should not be public, such as `127.0.0.1`, private networks (`10.x`, `172.16.x`, `192.168.x`) or cloud metadata endpoints (`169.254.169.254`).  Responses that are not images are rejected with 415, but internal images can still be fetched and the requests themselves are still made.
+
+For production, enable the host allow-list in your `server.conf` and list only your own origin hosts:
+
+```nginx
+if ($myhost !~ ".*(images.example.com|cdn.example.org)$") {
+    set $image_uri "";
+    set $debugkey "$myhost=denied";
+    return 403;
+}
+```
 
 # Example 
 * Original Image - https://octodex.github.com/images/codercat.jpg - 896x896

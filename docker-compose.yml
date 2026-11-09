@@ -8,6 +8,8 @@ services:
       - "443:443"
     volumes:
 #      - "./data:/app:rw"
+      # on first start the container copies its defaults (1-geoip.conf,
+      # server-conf.example) into this folder; add your server.conf here
       - "./sites-enabled:/app/etc/nginx/sites-enabled:rw"
     ulimits:
       nproc: 65535
