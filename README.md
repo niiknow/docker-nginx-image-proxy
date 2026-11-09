@@ -14,7 +14,7 @@ Patch apply with: `patch src/http/modules/ngx_http_image_filter_module.c image_f
 Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
 - [x] /healthcheck endpoint
-- [x] empty gif on other errors: 403, 404, 415, 422, 500, 502, 503, 504 - the original status code is kept so `<img onerror>` handlers still fire; remove the `error_page ... @empty_gif` line in your server.conf to return plain errors instead
+- [x] empty gif on other errors: 403, 404, 415, 422, 500, 502, 503, 504 - the original status code is kept so `<img onerror>` handlers still fire; remove the `error_page ... @empty_gif` line in `sites-enabled/1-resize.conf` to return plain errors instead
 - [x] precise image errors, with the reason in the `X-ImageProxy-Error` response header:
   - `502` - origin did not return an image (e.g. an HTML login/error page)
   - `415` - origin returned an image format that cannot be processed (e.g. svg, avif, heic); supported formats are jpeg, png, gif, webp, bmp and tiff
@@ -102,10 +102,26 @@ And if that doesn't work, you can always use your custom nginx config by passing
 
 If the `SERVER_CONF` url cannot be downloaded (404, unreachable, ...), the container stops at startup with an error message instead of running with a broken config.
 
-# Security: restrict origin hosts
-Out of the box, the example config (`sites-enabled/server-conf.example`) will fetch and resize images from **any** host given in the URL.  That makes it an open proxy, and it can also reach hosts that should not be public, such as `127.0.0.1`, private networks (`10.x`, `172.16.x`, `192.168.x`) or cloud metadata endpoints (`169.254.169.254`).  Responses that are not images are rejected with 415, but internal images can still be fetched and the requests themselves are still made.
+# Site configuration
+Image resizing is a shared internal service in `sites-enabled/1-resize.conf` (listening on `127.0.0.1:9082`), the same way GeoIP is served by `sites-enabled/1-geoip.conf`.  It holds everything that is not site specific: option parsing, cache, redirects, error handling and the origin host allow-list.
 
-For production, enable the host allow-list in your `server.conf` and list only your own origin hosts:
+A site only needs its own `server` block (listen, ssl, server_name, ...) and one include to expose `/rx/<options>/<image url>`:
+
+```nginx
+server {
+    listen      80;
+    server_name images.example.com;
+
+    include /etc/nginx/resize.conf;
+}
+```
+
+See `sites-enabled/server-conf.example`.  All sites share the same resize cache.  An older all-in-one `server.conf` (with its own `/rx/` location) keeps working alongside `1-resize.conf`.
+
+# Security: restrict origin hosts
+Out of the box, the resize service (`sites-enabled/1-resize.conf`) will fetch and resize images from **any** host given in the URL.  That makes it an open proxy, and it can also reach hosts that should not be public, such as `127.0.0.1`, private networks (`10.x`, `172.16.x`, `192.168.x`) or cloud metadata endpoints (`169.254.169.254`).  Responses that are not images are rejected (502), but internal images can still be fetched and the requests themselves are still made.
+
+For production, enable the host allow-list in `sites-enabled/1-resize.conf` (it applies to every site) and list only your own origin hosts:
 
 ```nginx
 if ($myhost !~ ".*(images.example.com|cdn.example.org)$") {
