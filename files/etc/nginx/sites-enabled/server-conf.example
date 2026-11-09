@@ -14,6 +14,16 @@ map $gravity $crop_offy {
     "~^(West|East|Center)$"     center;
 }
 
+# classify the origin response when image_filter fails (415), see @image_error
+# formats image_filter can decode: jpeg, gif, png, webp, bmp, tiff
+map $upstream_http_content_type $origin_image_type {
+    default                                                       not_image;
+    ""                                                            unknown;
+    "~*^(application|binary)/octet-stream"                        unknown;
+    "~*^image/(jpe?g|pjpeg|gif|png|webp|bmp|x-ms-bmp|tiff?)\b"    supported;
+    "~*^image/"                                                   unsupported;
+}
+
 server {
     listen 80;
     listen [::]:80 ipv6only=on;
@@ -44,7 +54,13 @@ server {
 
     # return a transparent 1x1 gif on errors; the original status code is kept
     # so <img onerror> handlers still fire.  Comment out to return plain errors.
-    error_page                       403 404 415 500 502 503 504 @empty_gif;
+    error_page                       403 404 422 500 502 503 504 @empty_gif;
+
+    # image_filter answers 415 for anything it cannot process; @image_error turns
+    # that into a more precise status (502/415/422) + X-ImageProxy-Error header
+    error_page                       415 @image_error;
+    recursive_error_pages            on; # so @image_error can re-raise 502/422
+    set $image_error                 "";
 
     # begin image_filter stuff
     image_filter_buffer              20M;
@@ -90,13 +106,27 @@ server {
         return 200 "OK";
     }
 
-    location ~* ^/rx/([^\/]+)/(.*) {
-        set $myargs                  "$1";
+    # NOTE: named captures are used for anything holding url text: numbered captures
+# ($1) get re-escaped by nginx when the request uri has %xx, double-encoding urls
+    location ~* ^/rx/(?<rx_args>[^\/]+)/(?<rx_rest>.*) {
+        set $myargs                  "$rx_args";
         set $protocol                "http";
-        set $image_uri               "$2";
+        set $image_uri               "$rx_rest";
         set $cmd                     "resize";
         set $image_path              "";
         set $clean_uri               "";
+
+        # $rx_rest comes from the already-decoded $uri; take the origin url from the raw
+        # $request_uri instead so it reaches the origin exactly as the client encoded
+        # it ("+", "%2B", "%20", "=" in paths/queries stay intact).
+        if ($request_uri ~* "^/rx/[^/?]+/(?<rx_image>[^?]*)") {
+            set $image_uri $rx_image;
+        }
+
+        # compat: a fully encoded origin url (/rx/100/http%3A%2F%2Fhost%2Fa.jpg)
+        if ($image_uri ~* "^https?%3A") {
+            set_unescape_uri $image_uri $image_uri;
+        }
 
         # if no protocol in URL, add them
         if ($image_uri !~ "(http:|https:)") {
@@ -104,10 +134,10 @@ server {
         }
 
         # now process the real image url
-        if ($image_uri ~ "^(http|https)+([:\/]+)([^/]*)(.*)") {
-            set $protocol $1;
-            set $myhost $3;
-            set $image_path $4;
+        if ($image_uri ~ "^(?<rx_proto>https?)[:\/]+(?<rx_host>[^/]*)(?<rx_path>.*)") {
+            set $protocol $rx_proto;
+            set $myhost $rx_host;
+            set $image_path $rx_path;
             set $image_uri "$protocol://$myhost$image_path";
         }
 
@@ -214,24 +244,26 @@ server {
 # strip proxy option args (w,h,q,r,g,e,c,ofmt,rz) so they are not sent to origin;
 # each pass removes one, nginx has no loops so the pass is repeated
         set $origin_args "&$args&";
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
-        if ($origin_args ~ "^(.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(&.*)$") { set $origin_args $1$2; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
+        if ($origin_args ~ "^(?<oa_pre>.*)&(?:w|h|q|r|g|e|c|ofmt|rz)=[^&]*(?<oa_post>&.*)$") { set $origin_args $oa_pre$oa_post; }
 
         set $origin_qs "";
-        if ($origin_args ~ "^&*([^&].*?)&*$") {
-            set $origin_qs "?$1";
+        if ($origin_args ~ "^&*(?<oa_qs>[^&].*?)&*$") {
+            set $origin_qs "?$oa_qs";
         }
 
         set $debugkey "$image_uri?w=$width&h=$height&q=$quality&r=$rotate&e=$sharpen&g=$gravity&cmd=$cmd&ofmt=$ofmt";
 
-        set_unescape_uri            $clean_uri "$image_uri$origin_qs";
+        # no unescaping here: set_unescape_uri turns "+" into a space and breaks
+        # urls like ...?img=ab+cd== (github issue #27)
+        set $clean_uri              "$image_uri$origin_qs";
         rewrite ^ /cmd/$cmd last;
     }
 
@@ -292,12 +324,32 @@ server {
             set $image_uri "$protocol://$myhost$image_uri";
         }
 
-        set_unescape_uri            $clean_uri "http://127.0.0.1/rx/$redir_args/$image_uri";
+        # Location is already a valid (encoded) url, pass it through unchanged
+        set $clean_uri              "http://127.0.0.1/rx/$redir_args/$image_uri";
         proxy_cache_bypass          1;
         proxy_pass                  $clean_uri;
     }
 
+    location @image_error {
+        if ($origin_image_type = "not_image") {
+            set $image_error        "origin did not return an image (content-type: $upstream_http_content_type)";
+            return 502;
+        }
+
+        if ($origin_image_type = "supported") {
+            set $image_error        "image could not be processed: corrupt or larger than image_filter_buffer ($upstream_http_content_type)";
+            return 422;
+        }
+
+        # unsupported or unrecognized image format: keep 415
+        set $image_error            "unsupported image format '$upstream_http_content_type', supported: jpeg, png, gif, webp, bmp, tiff";
+        add_header                  X-ImageProxy-Error $image_error always;
+        add_header                  X-ImageProxy-Debug $debugkey always;
+        empty_gif;
+    }
+
     location @empty_gif {
+        add_header                  X-ImageProxy-Error $image_error always;
         add_header                  X-ImageProxy-Debug $debugkey always;
         empty_gif;
     }

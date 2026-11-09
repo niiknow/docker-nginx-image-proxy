@@ -14,7 +14,12 @@ Patch apply with: `patch src/http/modules/ngx_http_image_filter_module.c image_f
 Features:
 - [x] image crop offset, credit: https://github.com/bobrik/nginx_image_filter
 - [x] /healthcheck endpoint
-- [x] empty gif on other errors: 403, 404, 415, 500, 502, 503, 504 - the original status code is kept so `<img onerror>` handlers still fire; remove the `error_page ... @empty_gif` line in your server.conf to return plain errors instead
+- [x] empty gif on other errors: 403, 404, 415, 422, 500, 502, 503, 504 - the original status code is kept so `<img onerror>` handlers still fire; remove the `error_page ... @empty_gif` line in your server.conf to return plain errors instead
+- [x] precise image errors, with the reason in the `X-ImageProxy-Error` response header:
+  - `502` - origin did not return an image (e.g. an HTML login/error page)
+  - `415` - origin returned an image format that cannot be processed (e.g. svg, avif, heic); supported formats are jpeg, png, gif, webp, bmp and tiff
+  - `422` - supported format, but the image is corrupt or larger than `image_filter_buffer`
+- [x] origin urls are passed through exactly as encoded by the client, so `+`, `%2B`, `%20`, `=` etc. in origin paths and query strings are preserved
 - [x] convert/force output to another format, support formats: bmp, jpg, png, gif, webp, and tiff 
 - [x] use custom ssl and saved config when you mount '/app' volume.  nginx logs has also been redirect so you can backup, such as aws s3 sync.  Just delete the default redirect to stdout/access.log and stderr/error.log files.
 - [x] support international characters in URL
