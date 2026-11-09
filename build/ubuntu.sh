@@ -1,12 +1,15 @@
 #!/bin/bash
 
+# docker builder prune -af && docker build --no-cache .
+
 export NGINX_BUILD_DIR=/usr/src/nginx/nginx-${NGINX_VERSION}
 cd /tmp
 
 apt-get update
 apt-get install -y --no-install-recommends --no-install-suggests curl apt-transport-https \
         apt-utils software-properties-common build-essential ca-certificates libssl-dev \
-        zlib1g zlib1g-dev dpkg-dev libpcre3 libpcre3-dev libgd-dev gpg-agent git
+        zlib1g zlib1g-dev dpkg-dev libpcre2-dev libgd-dev gpg-agent git \
+        gnupg2 lsb-release ubuntu-keyring
         
 add-apt-repository ppa:maxmind/ppa
 apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
@@ -23,10 +26,11 @@ mkdir -p /usr/src/nginx/set-misc-nginx-module
 tar -xof ngx-misc.tar.gz -C /usr/src/nginx/set-misc-nginx-module --strip-components=1
 rm ngx-misc.tar.gz
 
-curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
-echo "deb http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list
-echo "deb-src http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list
+curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list
+echo "deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list
 
 apt-get update && apt-get upgrade -y --no-install-recommends --no-install-suggests
 

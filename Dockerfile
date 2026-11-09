@@ -1,15 +1,15 @@
-FROM ubuntu:24.04 AS buildstep
+FROM ubuntu:26.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_DEVEL_KIT_VERSION=0.3.3 NGINX_SET_MISC_MODULE_VERSION=0.33 \
-    NGINX_VERSION=1.26.2
+    NGINX_DEVEL_KIT_VERSION=0.3.3 NGINX_SET_MISC_MODULE_VERSION=0.34 \
+    NGINX_VERSION=1.30.6
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.26.2-1~noble_arm64.deb
+    NGINX_VERSION=_1.30.6-1~resolute_arm64.deb
 
 COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
 
@@ -19,12 +19,13 @@ RUN cd /tmp \
     && apt-get install -y --no-install-recommends --no-install-suggests curl gpg-agent nano \
        libgd3 gettext-base unzip rsync cron apt-transport-https software-properties-common \
        ca-certificates libmaxminddb0 libmaxminddb-dev mmdb-bin python3-pip git \
+       gnupg2 lsb-release ubuntu-keyring \
     && dpkg --configure -a \
     && touch /var/log/cron.log \
-    && curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/ubuntu/ noble nginx" | tee -a /etc/apt/sources.list \
+    && curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
     && dpkg -i nginx${NGINX_VERSION} \
     && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
