@@ -1,12 +1,21 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 """
-Util to grab BunnyCDN Inbound addresses 
+Util to grab BunnyCDN Inbound addresses
 """
+
+import os
 
 import requests
 
-v4 = requests.get("https://bunnycdn.com/api/system/edgeserverlist").json()
-v6 = requests.get("https://bunnycdn.com/api/system/edgeserverlist/ipv6").json()
+
+def fetch(url):
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    return resp.json()
+
+
+v4 = fetch("https://bunnycdn.com/api/system/edgeserverlist")
+v6 = fetch("https://bunnycdn.com/api/system/edgeserverlist/ipv6")
 config = ""
 
 for item in v4:
@@ -17,5 +26,6 @@ for item in v6:
     directive = f"set_real_ip_from {item};\n"
     config += directive
 
-with open("cdn-bunny.conf", "w")as f:
+out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cdn-bunny.conf")
+with open(out, "w") as f:
     f.write(config)

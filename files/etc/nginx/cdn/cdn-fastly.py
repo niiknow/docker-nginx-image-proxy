@@ -1,18 +1,30 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 """
-Util to grab Fastly Inbound addresses 
+Util to grab Fastly Inbound addresses
 """
+
+import os
 
 import requests
 
-url = 'https://api.fastly.com/public-ip-list'
-json = requests.get(url).json()
+resp = requests.get("https://api.fastly.com/public-ip-list", timeout=30)
+resp.raise_for_status()
+data = resp.json()
+config = ""
 
-config = "set_real_ip_from "
-config += "\nset_real_ip_from ".join(json["addresses"])
+for item in data["addresses"]:
+    directive = f"set_real_ip_from {item};\n"
+    config += directive
+config += "\n"
+for item in data.get("ipv6_addresses", []):
+    directive = f"set_real_ip_from {item};\n"
+    config += directive
 
-bottom = "real_ip_header Fastly-Client-IP;"
-config += "\n\n" + bottom
+# real_ip_header is already set in cdn-ips.conf (nginx rejects duplicates),
+# so only suggest the CDN-specific header here
+bottom = "# real_ip_header Fastly-Client-IP;"
+config += "\n" + bottom
 
-with open("cdn-fastly.conf", "w")as f:
+out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cdn-fastly.conf")
+with open(out, "w") as f:
     f.write(config)

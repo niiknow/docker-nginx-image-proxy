@@ -9,9 +9,10 @@ RUN bash /tmp/ubuntu.sh
 FROM ubuntu:26.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=_1.30.6-1~resolute_arm64.deb
+    NGINX_VERSION=1.30.6
 
-COPY --from=buildstep /usr/src/nginx/nginx${NGINX_VERSION} /tmp
+# wildcard picks up the deb for whatever arch was built (amd64, arm64, ...)
+COPY --from=buildstep /usr/src/nginx/nginx_${NGINX_VERSION}-*.deb /tmp/
 
 RUN cd /tmp \
     && echo "\n\n* soft nofile 800000\n* hard nofile 800000\n\n" >> /etc/security/limits.conf \
@@ -27,7 +28,7 @@ RUN cd /tmp \
     && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list \
     && echo "deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu/ resolute nginx" | tee -a /etc/apt/sources.list \
     && apt-get update -y \
-    && dpkg -i nginx${NGINX_VERSION} \
+    && dpkg -i /tmp/nginx_${NGINX_VERSION}-*.deb \
     && apt-get install --no-install-recommends --no-install-suggests -y nginx-module-njs gettext-base \
     && rm -rf /etc/nginx/conf.d/default.conf \
     && mkdir -p /var/log/nginx /etc/nginx/ssl \
