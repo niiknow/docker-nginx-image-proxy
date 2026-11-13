@@ -2,6 +2,7 @@ services:
 
   nginx:
     image: niiknow/nginx-image-proxy
+    platform: linux/amd64
     container_name: nginx-image-proxy
     ports:
       - "80:80"

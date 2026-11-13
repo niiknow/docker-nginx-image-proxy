@@ -64,6 +64,8 @@ To achieve smaller/tiny microservice, this container utilize multi-stage build i
 docker build -t nginx-image-proxy .
 ```
 
+The image is built for **linux/amd64 only** (the platform is pinned in the `Dockerfile`), so it runs on x86 servers.  On an Apple Silicon Mac the build runs under emulation: in Docker Desktop turn off *Settings > General > Use Rosetta for x86_64/amd64 emulation* first, because Rosetta cannot run the Ubuntu 26.04 `tar` used during the build (QEMU can).  Expect the build to be slower than a native one.
+
 # run
 docker run -d --restart=always -p 80:80 niiknow/nginx-image-proxy
 --env SERVER_CONF='https://gist.githubusercontent.com/...'

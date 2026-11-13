@@ -60,6 +60,10 @@ grep -q "add-module=/usr/src/nginx/set-misc-nginx-module" ${NGINX_BUILD_DIR}/deb
 cd /usr/src/nginx
 apt-get build-dep nginx -y
 cd ${NGINX_BUILD_DIR}
+# the image_filter patch uses ceil() from libm; on amd64 that is a real libm call
+# (arm64 inlines it), so link libm explicitly or ld fails with "undefined
+# reference to symbol 'ceilf'"
+export DEB_LDFLAGS_APPEND="-lm"
 dpkg-buildpackage -uc -us -b
 
 cd /usr/src/nginx

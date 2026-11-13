@@ -1,4 +1,8 @@
-FROM ubuntu:26.04 AS buildstep
+# check=skip=FromPlatformFlagConstDisallowed
+# amd64 only: the image is published for x86 servers.  On Apple Silicon this
+# builds under emulation; turn off Rosetta in Docker Desktop (QEMU is needed,
+# Rosetta cannot run Ubuntu 26.04 tar)
+FROM --platform=linux/amd64 ubuntu:26.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.3 NGINX_SET_MISC_MODULE_VERSION=0.34 \
     NGINX_VERSION=1.30.6
@@ -6,7 +10,7 @@ ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
 
-FROM ubuntu:26.04
+FROM --platform=linux/amd64 ubuntu:26.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_VERSION=1.30.6
