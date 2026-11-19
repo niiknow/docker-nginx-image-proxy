@@ -5,7 +5,7 @@
 FROM --platform=linux/amd64 ubuntu:26.04 AS buildstep
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
     NGINX_DEVEL_KIT_VERSION=0.3.3 NGINX_SET_MISC_MODULE_VERSION=0.34 \
-    NGINX_VERSION=1.30.6
+    NGINX_VERSION=1.30.7
 ADD ./build/ /tmp/
 RUN bash /tmp/ubuntu.sh
 
@@ -13,7 +13,7 @@ RUN bash /tmp/ubuntu.sh
 FROM --platform=linux/amd64 ubuntu:26.04
 LABEL maintainer="noogen <friends@niiknow.org>"
 ENV TERM=xterm container=docker DEBIAN_FRONTEND=noninteractive \
-    NGINX_VERSION=1.30.6
+    NGINX_VERSION=1.30.7
 
 # wildcard picks up the deb for whatever arch was built (amd64, arm64, ...)
 COPY --from=buildstep /usr/src/nginx/nginx_${NGINX_VERSION}-*.deb /tmp/
